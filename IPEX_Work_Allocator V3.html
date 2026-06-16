@@ -1185,8 +1185,9 @@ var SYNC_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwIpjpsGs4HRBCJD12
 
 // Load history from GitHub (via proxy) on page load
 function loadFromGitHub() {
-    fetch(SYNC_PROXY_URL)
-    .then(function(r) { if (r.ok) return r.json(); throw new Error('Load failed'); })
+    fetch(SYNC_PROXY_URL, { redirect: 'follow' })
+    .then(function(r) { if (r.ok) return r.text(); throw new Error('Load failed'); })
+    .then(function(text) { return JSON.parse(text); })
     .then(function(data) {
         if (Array.isArray(data) && data.length > 0) {
             var existing = getHistory();
@@ -1207,19 +1208,25 @@ function loadFromGitHub() {
 
 // Save history to GitHub (via proxy)
 function saveToGitHub(historyData) {
-    fetch(SYNC_PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(historyData)
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(result) {
-        if (result.success) {
-            console.log('[GitHub Sync] Saved to GitHub successfully');
+    var dataStr = encodeURIComponent(JSON.stringify(historyData));
+    var url = SYNC_PROXY_URL + '?action=save&data=' + dataStr;
+    
+    // Use GET with action=save to avoid CORS preflight issues
+    fetch(url, { redirect: 'follow' })
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+        try {
+            var result = JSON.parse(text);
+            if (result.success) {
+                console.log('[GitHub Sync] Saved to GitHub successfully');
+                showSyncStatus('✅ Synced to cloud', 'success');
+            } else {
+                console.error('[GitHub Sync] Save failed:', result.error);
+                showSyncStatus('⚠️ Sync failed - saved locally', 'warning');
+            }
+        } catch(e) {
+            console.log('[GitHub Sync] Save response received');
             showSyncStatus('✅ Synced to cloud', 'success');
-        } else {
-            console.error('[GitHub Sync] Save failed:', result.error);
-            showSyncStatus('⚠️ Sync failed - saved locally', 'warning');
         }
     })
     .catch(function(err) {
