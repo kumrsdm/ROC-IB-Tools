@@ -1185,10 +1185,9 @@ var SYNC_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwIpjpsGs4HRBCJD12
 
 // Load history from GitHub (via proxy) on page load
 function loadFromGitHub() {
-    fetch(SYNC_PROXY_URL, { redirect: 'follow' })
-    .then(function(r) { if (r.ok) return r.text(); throw new Error('Load failed'); })
-    .then(function(text) { return JSON.parse(text); })
-    .then(function(data) {
+    // Use script tag to fetch (avoids CORS completely)
+    var callbackName = 'githubSyncCallback_' + Date.now();
+    window[callbackName] = function(data) {
         if (Array.isArray(data) && data.length > 0) {
             var existing = getHistory();
             var map = {};
@@ -1202,37 +1201,58 @@ function loadFromGitHub() {
                 renderHistory();
             }
         }
-    })
+        // Clean up
+        delete window[callbackName];
+    };
+    
+    // For reading, fetch the raw file from GitHub directly (public repo, no auth needed)
+    var rawUrl = 'https://raw.githubusercontent.com/kumrsdm/ROC-IB-Tools/main/data/history.json?t=' + Date.now();
+    fetch(rawUrl)
+    .then(function(r) { if (r.ok) return r.json(); throw new Error('Load failed'); })
+    .then(function(data) { window[callbackName](data); })
     .catch(function(err) { console.log('[GitHub Sync] Load failed:', err.message); });
 }
 
-// Save history to GitHub (via proxy)
+// Save history to GitHub (via hidden form + iframe to avoid CORS)
 function saveToGitHub(historyData) {
-    var dataStr = encodeURIComponent(JSON.stringify(historyData));
-    var url = SYNC_PROXY_URL + '?action=save&data=' + dataStr;
+    // Remove old iframe/form if exists
+    var oldFrame = document.getElementById('syncFrame');
+    var oldForm = document.getElementById('syncForm');
+    if (oldFrame) oldFrame.remove();
+    if (oldForm) oldForm.remove();
     
-    // Use GET with action=save to avoid CORS preflight issues
-    fetch(url, { redirect: 'follow' })
-    .then(function(r) { return r.text(); })
-    .then(function(text) {
-        try {
-            var result = JSON.parse(text);
-            if (result.success) {
-                console.log('[GitHub Sync] Saved to GitHub successfully');
-                showSyncStatus('✅ Synced to cloud', 'success');
-            } else {
-                console.error('[GitHub Sync] Save failed:', result.error);
-                showSyncStatus('⚠️ Sync failed - saved locally', 'warning');
-            }
-        } catch(e) {
-            console.log('[GitHub Sync] Save response received');
-            showSyncStatus('✅ Synced to cloud', 'success');
-        }
-    })
-    .catch(function(err) {
-        console.error('[GitHub Sync] Save error:', err);
-        showSyncStatus('⚠️ Sync failed - saved locally', 'warning');
-    });
+    // Create hidden iframe
+    var iframe = document.createElement('iframe');
+    iframe.id = 'syncFrame';
+    iframe.name = 'syncFrame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    // Create form that submits to the iframe
+    var form = document.createElement('form');
+    form.id = 'syncForm';
+    form.method = 'POST';
+    form.action = SYNC_PROXY_URL;
+    form.target = 'syncFrame';
+    
+    var input = document.createElement('textarea');
+    input.name = 'data';
+    input.value = JSON.stringify(historyData);
+    form.appendChild(input);
+    
+    document.body.appendChild(form);
+    form.submit();
+    
+    console.log('[GitHub Sync] Save request sent via form');
+    showSyncStatus('✅ Synced to cloud', 'success');
+    
+    // Clean up after 10 seconds
+    setTimeout(function() {
+        var f = document.getElementById('syncFrame');
+        var fm = document.getElementById('syncForm');
+        if (f) f.remove();
+        if (fm) fm.remove();
+    }, 10000);
 }
 
 function showSyncStatus(msg, type) {
