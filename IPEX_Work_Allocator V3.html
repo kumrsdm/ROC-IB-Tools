@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPEX Work Allocation Tool</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1a202c;line-height:1.5}
+.header{background:linear-gradient(135deg,#232f3e 0%,#37475a 100%);color:white;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:22px;font-weight:600}.header .subtitle{font-size:13px;opacity:0.8;margin-top:2px}
+.header .logo{font-size:14px;background:#ff9900;padding:6px 14px;border-radius:4px;font-weight:600}
+.container{max-width:1200px;margin:24px auto;padding:0 24px}
+.step-indicator{display:flex;gap:4px;margin-bottom:24px}
+.step-dot{flex:1;height:6px;border-radius:3px;background:#e2e8f0}.step-dot.active{background:#ff9900}.step-dot.done{background:#38a169}
+.card{background:white;border-radius:12px;padding:28px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border:1px solid #e8ecf0}
+.card h2{font-size:18px;margin-bottom:16px;color:#232f3e;display:flex;align-items:center;gap:10px}
+.card h2 .step-num{background:#ff9900;color:white;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.form-row{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:13px;font-weight:600;color:#4a5568;text-transform:uppercase;letter-spacing:0.03em}
+input,select,textarea{padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#ff9900;box-shadow:0 0 0 3px rgba(255,153,0,0.1)}
+textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-size:12px}
+.btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:#ff9900;color:white}.btn-primary:hover{background:#e88a00}
+.btn-secondary{background:#edf2f7;color:#4a5568}.btn-secondary:hover{background:#e2e8f0}
+.btn-success{background:#38a169;color:white}.btn-success:hover{background:#2f855a}
+.btn-danger{background:#e53e3e;color:white}.btn-sm{padding:6px 12px;font-size:12px}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-sked{background:#ebf8ff;color:#2b6cb0}.badge-sfc{background:#faf5ff;color:#6b46c1}
+.badge-ict{background:#f0fff4;color:#276749}.badge-ait{background:#fffaf0;color:#c05621}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-top:10px}
+.team-member{padding:5px 8px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;display:flex;align-items:center;gap:5px}
+.team-member .dot{width:6px;height:6px;border-radius:50%;background:#38a169;flex-shrink:0}
+.task-section{margin-top:14px;border:1px solid #e8ecf0;border-radius:8px;overflow:hidden}
+.task-section-header{background:#f7fafc;padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #e8ecf0;display:flex;justify-content:space-between;align-items:center}
+.task-row{display:flex;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f4f8;gap:12px}
+.task-row:last-child{border-bottom:none}.task-row:hover{background:#fafbfc}
+.task-name{flex:1;font-size:12px;color:#2d3748}
+.task-assignee{min-width:200px}
+.task-assignee select{width:100%;padding:5px 8px;font-size:12px}
+.all-pocs-label{font-size:11px;color:#718096;font-style:italic;padding:5px 8px;background:#f7fafc;border-radius:4px}
+.stats-bar{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+.stat-item{background:#f7fafc;padding:10px 14px;border-radius:8px;border:1px solid #e8ecf0;text-align:center;min-width:80px}
+.stat-item .num{font-size:20px;font-weight:700;color:#232f3e}.stat-item .label{font-size:10px;color:#718096;text-transform:uppercase}
+.hidden{display:none!important}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px}
+.alert-info{background:#ebf8ff;color:#2b6cb0;border:1px solid #bee3f8}
+.alert-success{background:#f0fff4;color:#276749;border:1px solid #c6f6d5}
+.alert-warning{background:#fffaf0;color:#c05621;border:1px solid #feebc8}
+.workload-item{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.workload-item .wl-name{width:80px;font-size:10px;color:#4a5568;text-align:right}
+.workload-item .wl-bar{flex:1;height:14px;background:#e2e8f0;border-radius:8px;overflow:hidden}
+.workload-item .wl-fill{height:100%;background:linear-gradient(90deg,#38a169,#68d391);border-radius:8px}
+.workload-item .wl-count{width:20px;font-size:11px;font-weight:700;color:#232f3e}
+.email-preview-frame{border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;max-height:700px;overflow-y:auto;background:white}
+.footer{text-align:center;padding:20px;color:#a0aec0;font-size:12px}
+.nav-tabs{display:flex;gap:0;margin-bottom:20px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);border:1px solid #e8ecf0}
+.nav-tab{padding:12px 24px;border:none;background:none;font-size:14px;font-weight:600;cursor:pointer;color:#718096;transition:all 0.2s;flex:1;text-align:center}
+.nav-tab.active{color:#fff;background:#ff9900}
+.nav-tab:hover:not(.active){background:#f7fafc;color:#232f3e}
+.hist-table{width:100%;border-collapse:collapse;font-size:12px}
+.hist-table th{background:#f7fafc;padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#4a5568;border-bottom:2px solid #e2e8f0}
+.hist-table td{padding:8px 12px;border-bottom:1px solid #f0f4f8;vertical-align:top}
+.hist-table tr:hover td{background:#fafbfc}
+.sync-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:#f8f7ff;border:1px solid #e2e8f0;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="header"><div><h1>IPEX Work Allocation Tool</h1><div class="subtitle">Line Haul ROC Field — Automated Daily Work Distribution</div></div><div class="logo">RSO IB</div></div>
+<div class="container">
+<div class="nav-tabs">
+<button class="nav-tab active" id="tabBtnAlloc" onclick="switchMainTab('allocator')">📋 Allocator</button>
+<button class="nav-tab" id="tabBtnHist" onclick="switchMainTab('history')">📜 History</button>
+</div>
+<div id="mainAllocator">
+<div class="step-indicator"><div class="step-dot active" id="dot1"></div><div class="step-dot" id="dot2"></div><div class="step-dot" id="dot3"></div><div class="step-dot" id="dot4"></div></div>
+<div class="card" id="step1">
+<h2><span class="step-num">1</span> Upload Shift Schedule</h2>
+<div class="alert alert-info">Paste your shift schedule data from Excel. The tool auto-detects team members and shifts.</div>
+<div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (SKED)</label><textarea id="scheduleDataSKED" placeholder="Paste SKED sheet data here (Shift 1 SKED + Shift 3 SKED)..."></textarea></div></div>
+<div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (SFC)</label><textarea id="scheduleDataSFC" placeholder="Paste SFC sheet data here (Shift 1 SFC + Shift 3 SFC)..."></textarea></div></div>
+<div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (ICT)</label><textarea id="scheduleDataICT" placeholder="Paste ICT sheet data here..."></textarea></div></div>
+<div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (AIT)</label><textarea id="scheduleDataAIT" placeholder="Paste AIT sheet data here..."></textarea></div></div>
+<div style="margin-top:16px;border:1px solid #fbd38d;border-radius:8px;padding:14px 16px;background:#fffaf0;">
+<h3 style="font-size:13px;color:#c05621;margin-bottom:10px;">⏱️ Cross-Shift OT (Optional)</h3>
+<div class="alert alert-warning" style="margin-bottom:10px;">Add associates working OT from another shift. Enter login, select their team, and choose which task group to assign them to.</div>
+<div id="otList"></div>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;">
+<input type="text" id="otLogin" placeholder="Login (e.g. tejkuchc)" style="flex:1;min-width:120px;padding:6px 10px;font-size:12px;">
+<select id="otTeam" style="padding:6px 10px;font-size:12px;min-width:100px;"><option value="SKED">SKED</option><option value="SFC">SFC</option><option value="ICT">ICT</option><option value="AIT">AIT</option></select>
+<select id="otTaskGroup" style="padding:6px 10px;font-size:12px;min-width:140px;"><option value="">Assign to any task</option><option value="monitoring">Monitoring</option><option value="sked">SKED & AM Cases</option><option value="sfc">SFC</option><option value="shiftWash">Shift Wash</option><option value="imports">IMPORTS</option><option value="ict">ICT</option><option value="ait">AIT</option></select>
+<button class="btn btn-primary btn-sm" onclick="addOT()">+ Add OT</button>
+</div>
+</div>
+<div style="display:flex;gap:12px;margin-top:12px;"><button class="btn btn-primary" onclick="parseSchedule()">📋 Parse Schedule</button><button class="btn btn-secondary" onclick="loadSampleData()">📂 Load Sample (Demo)</button></div>
+<div id="parseResult" class="hidden" style="margin-top:16px;"></div>
+</div>
+<div class="card hidden" id="step2">
+<h2><span class="step-num">2</span> Select Date & Shift</h2>
+<div class="form-row"><div class="form-group"><label>Date</label><input type="date" id="allocDate" onchange="detectAvailability()"></div><div class="form-group"><label>Shift</label><select id="allocShift" onchange="detectAvailability()"><option value="">--</option><option value="Shift 1">Shift 1</option><option value="Shift 2">Shift 2</option><option value="Shift 3">Shift 3</option></select></div><div class="form-group"><label>Manager(s)</label><input type="text" id="managerName" placeholder="e.g. Kumrsdm & Smohu"></div></div>
+<div id="availabilityResult" class="hidden"><div class="stats-bar" id="statsBar"></div><div style="margin-top:14px;" id="teamGrids"></div></div>
+<div style="margin-top:16px;display:flex;gap:12px;"><button class="btn btn-secondary" onclick="goToStep(1)">← Back</button><button class="btn btn-primary" onclick="goToStep(3)">Continue →</button></div>
+</div>
+<div class="card hidden" id="step3">
+<h2><span class="step-num">3</span> Allocate Tasks</h2>
+<div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+<button class="btn btn-primary" onclick="smartRandomize()">🎲 Smart Randomize</button>
+<button class="btn btn-danger btn-sm" onclick="clearAll()">✕ Clear</button>
+<span id="antiRepeatInfo" style="font-size:11px;color:#4a5568;"></span>
+</div>
+<div id="allTaskSections"></div>
+<div style="margin-top:20px;"><h3 style="font-size:13px;color:#4a5568;margin-bottom:10px;">📊 Workload Balance</h3><div id="workloadChart"></div></div>
+<div style="margin-top:20px;border:1px solid #e8ecf0;border-radius:8px;padding:14px 16px;">
+<h3 style="font-size:13px;color:#4a5568;margin-bottom:10px;">🔗 Resources</h3>
+<div id="resourcesList"></div>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;">
+<input type="text" id="resLabel" placeholder="Label" style="flex:1;min-width:120px;padding:6px 10px;font-size:12px;">
+<input type="text" id="resUrl" placeholder="URL" style="flex:2;min-width:200px;padding:6px 10px;font-size:12px;">
+<button class="btn btn-primary btn-sm" onclick="addResource()">+ Add</button>
+</div>
+</div>
+<div style="margin-top:16px;display:flex;gap:12px;"><button class="btn btn-secondary" onclick="goToStep(2)">← Back</button><button class="btn btn-success" onclick="goToStep(4)">✉ Generate Email →</button></div>
+</div>
+<div class="card hidden" id="step4">
+<h2><span class="step-num">4</span> Preview & Send</h2>
+<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+<button class="btn btn-sm btn-primary" onclick="showTab('preview')">Preview</button>
+<button class="btn btn-sm btn-secondary" onclick="showTab('edit')">✏️ Edit HTML</button>
+<button class="btn btn-sm btn-success" onclick="saveToHistory()">💾 Save to History</button>
+</div>
+<div id="historySaveMsg" class="hidden" style="margin-bottom:12px;"></div>
+<div id="tabPreview"><div class="email-preview-frame" id="emailPreviewFrame"></div></div>
+<div id="tabEdit" class="hidden"><textarea id="emailEditor" style="width:100%;min-height:400px;font-family:Consolas,monospace;font-size:11px;padding:12px;border:2px solid #e2e8f0;border-radius:8px;"></textarea></div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="goToStep(3)">← Back</button><button class="btn btn-success" onclick="downloadEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy</button></div>
+</div>
+</div>
+<div id="mainHistory" class="hidden">
+<div class="card">
+<h2>📜 Allocation History & Anti-Repeat Engine</h2>
+<div class="sync-bar">
+<button class="btn btn-sm btn-primary" onclick="exportHistory()">⬇ Export JSON</button>
+<button class="btn btn-sm btn-secondary" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="importHistory(event)">
+<button class="btn btn-sm btn-danger" onclick="confirmClearHistory()">🗑 Clear</button>
+<span style="font-size:11px;color:#718096;margin-left:auto;" id="histCount"></span>
+</div>
+<div class="alert alert-info"><strong>Multi-user sync:</strong> After finalizing, export the JSON and save to this shared folder. Other managers import it before running Smart Randomize. The engine checks the last 5 days to avoid repeating same task→person combos.</div>
+<div class="form-row">
+<div class="form-group"><label>Date</label><input type="date" id="hfDate" onchange="renderHistoryTable()"></div>
+<div class="form-group"><label>Shift</label><select id="hfShift" onchange="renderHistoryTable()"><option value="">All</option><option value="Shift 1">Shift 1</option><option value="Shift 2">Shift 2</option><option value="Shift 3">Shift 3</option></select></div>
+<div class="form-group"><label>Login</label><input type="text" id="hfLogin" placeholder="Search..." oninput="renderHistoryTable()"></div>
+</div>
+<div id="histTableWrap"></div>
+</div>
+</div>
+<div class="footer">IPEX Work Allocation Tool v5.0 | RSO IB — Line Haul ROC | History-Enabled Anti-Repeat</div>
+</div>
+<script>
+var scheduleData={SKED:[],SFC:[],ICT:[],AIT:[]},availableTeam={SKED:[],SFC:[],ICT:[],AIT:[],IMPORTS:[]},emailHtml='';
+var RESOURCES=[{label:'SOPs / Docs',icon:'&#128196;',url:'https://quip-amazon.com/owCgOd6ubJjV/IPEX-SOP'}];
+var HISTORY_KEY='ipex_wa_history';
+var ANTI_REPEAT_DAYS=5;
+var otAssociates=[]; // {login, team, taskGroup}
+
+function addOT(){
+var login=document.getElementById('otLogin').value.trim().toLowerCase();
+var team=document.getElementById('otTeam').value;
+var taskGroup=document.getElementById('otTaskGroup').value;
+if(!login){alert('Enter a login.');return;}
+if(otAssociates.some(function(o){return o.login===login;})){alert(login+' already added.');return;}
+otAssociates.push({login:login,team:team,taskGroup:taskGroup});
+document.getElementById('otLogin').value='';
+renderOTList();
+}
+function removeOT(idx){otAssociates.splice(idx,1);renderOTList();}
+function renderOTList(){
+var h='';
+if(!otAssociates.length){document.getElementById('otList').innerHTML='<div style="color:#a0aec0;font-size:11px;">No OT associates added yet.</div>';return;}
+otAssociates.forEach(function(o,i){
+var groupLabel=o.taskGroup?TASKS[o.taskGroup].title:'Any task';
+h+='<div style="display:inline-flex;align-items:center;gap:6px;margin:3px 4px 3px 0;padding:4px 10px;background:#fff;border:1px solid #fbd38d;border-radius:6px;font-size:11px;">';
+h+='<span style="font-weight:600;">'+o.login+'</span>';
+h+='<span class="badge badge-'+(o.team==='SFC'?'sfc':o.team==='ICT'?'ict':o.team==='AIT'?'ait':'sked')+'">'+o.team+'</span>';
+h+='<span style="color:#718096;">→ '+groupLabel+'</span>';
+h+='<button onclick="removeOT('+i+')" style="border:none;background:none;color:#e53e3e;cursor:pointer;font-weight:700;font-size:13px;">✕</button></div>';
+});
+document.getElementById('otList').innerHTML=h;
+}
+
+var TASKS={monitoring:{title:'Monitoring Queues',color:'#1e5c3a',icon:'📡',group:'SKED',tasks:[{name:'Chat Queue Monitoring / Sync up MoM / Hand Over Call'},{name:'Chime/Slack Rooms Monitoring',allPocs:true},{name:'Cases SOS & EOS'},{name:'Res Coca-Cola Monitoring',ownershipFilter:'Res-Coco'},{name:'Network Health Monitoring / Pushouts'},{name:'Cases SL and Mails Check'},{name:'Planned/Unplanned Closures / Closure Slack Channel'},{name:'Triggers check'}]},sked:{title:'SKED & AM — Case Queues',color:'#2d3561',icon:'📋',group:'SKED',tasks:[{name:'GL Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'SKED/AM Cases / PO Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'DFM Cases',allPocs:true},{name:'IB Scheduling Callout Emails',allPocs:true},{name:'Email Monitoring (roc-iaa/roc-rlb1/roc-vio)',allPocs:true},{name:'Hot Pos (Shared Path)',allPocs:true},{name:'Live-Drop mismatch',allPocs:true},{name:'FMC-DM mismatch',allPocs:true},{name:'LTR ETA visibility for IBTL loads',allPocs:true},{name:'EOD buffer & Scrubbings / AZNG Pullin trigger',allPocs:true},{name:'Cases Backlog Division'},{name:'DWP Division (FMC-DM)'},{name:'DWP Division (LTR-ETA)'},{name:'DWP Division (D2L)'},{name:'DWP Division (C-VRID)'},{name:'Pushout Plan creation'}]},sfc:{title:'SFC',color:'#5c2d5c',icon:'🎫',group:'SFC',tasks:[{name:'SFC Tickets',allPocs:true},{name:'SFC Email Monitoring / Escalation Emails'}]},shiftWash:{title:'Shift Wash',color:'#3d4f1e',icon:'🔄',group:'SKED',tasks:[{name:'Sked SW'},{name:'AM SW'}]},imports:{title:'IMPORTS',color:'#5c1e1e',icon:'🚢',group:'IMPORTS',singlePerson:true,tasks:[{name:'Cases'},{name:'Case SL Check'},{name:'Loads Tendering'},{name:'Contracts creation'},{name:'GM-PO-Issues, NA Imports Accessorial'},{name:'Shift wash'},{name:'Shift wash R4D'}]},ict:{title:'ICT',color:'#1e3d5c',icon:'🌐',group:'ICT',tasks:[{name:'Cases - Redirects and IBWR queues',multi:true},{name:'Case SL Check'},{name:'Sims Execution',multi:true},{name:'IBWR Callout Emails',multi:true},{name:'Shift wash'}]},ait:{title:'AIT',color:'#5c3d1e',icon:'📦',group:'AIT',tasks:[{name:'Missed Pickup Case Queue',allPocs:true}]}};
+
+// ===== HISTORY FUNCTIONS =====
+function getHistory(){
+try{var h=localStorage.getItem(HISTORY_KEY);return h?JSON.parse(h):[];}catch(e){return[];}
+}
+function saveHistoryData(data){
+localStorage.setItem(HISTORY_KEY,JSON.stringify(data));
+}
+function getRecentHistory(days){
+var h=getHistory(),cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);
+var cutStr=cutoff.toISOString().split('T')[0];
+return h.filter(function(entry){return entry.date>=cutStr;});
+}
+function buildAntiRepeatMap(){
+// Returns map: taskKey -> {login: countInLastNDays}
+var recent=getRecentHistory(ANTI_REPEAT_DAYS),map={};
+recent.forEach(function(entry){
+if(!entry.assignments)return;
+Object.keys(entry.assignments).forEach(function(taskKey){
+var a=entry.assignments[taskKey];
+if(a.allPocs)return;
+var logins=a.assignees||[];
+logins.forEach(function(login){
+if(!map[taskKey])map[taskKey]={};
+map[taskKey][login]=(map[taskKey][login]||0)+1;
+});
+});
+});
+return map;
+}
+function saveToHistory(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+if(!date||!shift){alert('No date/shift selected.');return;}
+var assignments={};
+Object.keys(TASKS).forEach(function(key){var sec=TASKS[key];
+sec.tasks.forEach(function(task,idx){var id=key+'_'+idx;
+var el=document.getElementById('sel_'+id);
+if(task.allPocs){
+if(!el){assignments[id]={name:task.name,allPocs:true,assignees:[]};return;}
+var val=[];var isAllPocs=false;
+for(var o=0;o<el.options.length;o++){if(el.options[o].selected){if(el.options[o].value==='ALL_POCS')isAllPocs=true;else if(el.options[o].value)val.push(el.options[o].value);}}
+if(isAllPocs||val.length===0){assignments[id]={name:task.name,allPocs:true,assignees:[]};}
+else{assignments[id]={name:task.name,allPocs:false,assignees:val};}
+}
+else{if(!el)return;
+var val=[];if(el.multiple){for(var o=0;o<el.options.length;o++){if(el.options[o].selected&&el.options[o].value)val.push(el.options[o].value);}}
+else if(el.value)val.push(el.value);
+assignments[id]={name:task.name,allPocs:false,assignees:val};}});});
+var entry={date:date,shift:shift,manager:document.getElementById('managerName').value||'',savedAt:new Date().toISOString(),assignments:assignments};
+var h=getHistory();
+// Remove existing entry for same date+shift (overwrite)
+h=h.filter(function(e){return!(e.date===date&&e.shift===shift);});
+h.push(entry);
+h.sort(function(a,b){return b.date.localeCompare(a.date)||b.shift.localeCompare(a.shift);});
+saveHistoryData(h);
+document.getElementById('historySaveMsg').className='alert alert-success';
+document.getElementById('historySaveMsg').innerHTML='✅ Saved! <strong>'+date+' '+shift+'</strong> recorded. Export JSON to share with other managers.';
+}
+function exportHistory(){
+var h=getHistory();
+if(!h.length){alert('No history to export.');return;}
+var blob=new Blob([JSON.stringify(h,null,2)],{type:'application/json'});
+var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+a.download='ipex_history.json';a.click();
+}
+function importHistory(event){
+var file=event.target.files[0];if(!file)return;
+var reader=new FileReader();
+reader.onload=function(e){
+try{
+var imported=JSON.parse(e.target.result);
+if(!Array.isArray(imported)){alert('Invalid file format.');return;}
+var existing=getHistory();
+// Merge: imported entries overwrite existing for same date+shift
+var map={};
+existing.forEach(function(entry){map[entry.date+'|'+entry.shift]=entry;});
+imported.forEach(function(entry){map[entry.date+'|'+entry.shift]=entry;});
+var merged=Object.values(map);
+merged.sort(function(a,b){return b.date.localeCompare(a.date)||b.shift.localeCompare(a.shift);});
+saveHistoryData(merged);
+alert('✅ Imported! '+imported.length+' entries merged. Total: '+merged.length);
+renderHistoryTable();
+}catch(err){alert('Error reading file: '+err.message);}
+};
+reader.readAsText(file);
+event.target.value='';
+}
+function confirmClearHistory(){
+if(confirm('Clear ALL history? This cannot be undone.')){saveHistoryData([]);renderHistoryTable();}
+}
+function renderHistoryTable(){
+var h=getHistory(),fd=document.getElementById('hfDate').value,fs=document.getElementById('hfShift').value,fl=(document.getElementById('hfLogin').value||'').toLowerCase();
+var filtered=h.filter(function(e){
+if(fd&&e.date!==fd)return false;
+if(fs&&e.shift!==fs)return false;
+if(fl){var found=false;if(e.assignments){Object.values(e.assignments).forEach(function(a){if(a.assignees&&a.assignees.join(',').toLowerCase().indexOf(fl)>=0)found=true;});}if(!found)return false;}
+return true;
+});
+document.getElementById('histCount').textContent=h.length+' total records | '+filtered.length+' shown';
+if(!filtered.length){document.getElementById('histTableWrap').innerHTML='<div style="color:#a0aec0;text-align:center;padding:20px;">No history records found.</div>';return;}
+var html='<table class="hist-table"><thead><tr><th>Date</th><th>Shift</th><th>Manager</th><th>Saved</th><th>Tasks</th><th></th></tr></thead><tbody>';
+filtered.forEach(function(entry,i){
+var taskCount=entry.assignments?Object.keys(entry.assignments).filter(function(k){return!entry.assignments[k].allPocs&&entry.assignments[k].assignees&&entry.assignments[k].assignees.length>0;}).length:0;
+html+='<tr><td><strong>'+entry.date+'</strong></td><td><span class="badge badge-sked">'+entry.shift+'</span></td><td>'+entry.manager+'</td><td style="font-size:10px;color:#718096;">'+new Date(entry.savedAt).toLocaleString()+'</td><td>'+taskCount+' assigned</td>';
+html+='<td><button class="btn btn-sm btn-secondary" onclick="toggleHistDetail('+i+')">View</button></td></tr>';
+html+='<tr class="hidden" id="histDetail_'+i+'"><td colspan="6" style="background:#f8f9fb;padding:12px;">';
+if(entry.assignments){
+html+='<table style="width:100%;font-size:11px;border-collapse:collapse;">';
+Object.keys(entry.assignments).forEach(function(k){var a=entry.assignments[k];
+if(a.allPocs)return;
+if(!a.assignees||!a.assignees.length)return;
+html+='<tr><td style="padding:3px 8px;color:#4a5568;">'+a.name+'</td><td style="padding:3px 8px;font-weight:600;">'+a.assignees.join(', ')+'</td></tr>';
+});
+html+='</table>';
+}
+html+='</td></tr>';
+});
+html+='</tbody></table>';
+document.getElementById('histTableWrap').innerHTML=html;
+}
+function toggleHistDetail(i){document.getElementById('histDetail_'+i).classList.toggle('hidden');}
+
+// ===== TAB NAVIGATION =====
+function switchMainTab(tab){
+document.getElementById('mainAllocator').classList.toggle('hidden',tab!=='allocator');
+document.getElementById('mainHistory').classList.toggle('hidden',tab!=='history');
+document.getElementById('tabBtnAlloc').classList.toggle('active',tab==='allocator');
+document.getElementById('tabBtnHist').classList.toggle('active',tab==='history');
+if(tab==='history')renderHistoryTable();
+}
+
+// ===== MAIN ALLOCATOR FUNCTIONS =====
+function goToStep(s){
+for(var i=1;i<=4;i++){document.getElementById('step'+i).classList.toggle('hidden',i!==s);document.getElementById('dot'+i).className='step-dot'+(i<s?' done':'')+(i===s?' active':'');}
+if(s===3){var already=document.getElementById('allTaskSections').innerHTML.trim();if(!already){renderTasks();}renderResources();}if(s===4)generateEmail();
+}
+function getPool(g){
+if(g==='SKED')return availableTeam.SKED;if(g==='SFC')return availableTeam.SFC;
+if(g==='ICT')return availableTeam.ICT;if(g==='AIT')return availableTeam.AIT;
+if(g==='IMPORTS')return availableTeam.IMPORTS;return[];
+}
+function renderTasks(){
+var antiMap=buildAntiRepeatMap();
+var histDays=getRecentHistory(ANTI_REPEAT_DAYS).length;
+document.getElementById('antiRepeatInfo').textContent=histDays>0?'🛡️ Anti-repeat active ('+histDays+' records from last '+ANTI_REPEAT_DAYS+' days)':'ℹ️ No history yet — save allocations to enable anti-repeat';
+// Build OT restriction map
+var otRestricted={};
+otAssociates.forEach(function(o){if(o.taskGroup)otRestricted[o.login]=o.taskGroup;});
+var h='';Object.keys(TASKS).forEach(function(key){var sec=TASKS[key],pool=getPool(sec.group);
+// Filter pool: OT associates with specific taskGroup only show in their assigned group
+var filteredPool=pool.filter(function(m){
+if(otRestricted[m.login]&&otRestricted[m.login]!==key)return false;
+return true;
+});
+h+='<div class="task-section"><div class="task-section-header"><span>'+sec.icon+' '+sec.title+'</span><span style="font-size:11px;color:#718096;">'+filteredPool.length+' avail</span></div>';
+if(filteredPool.length===0){h+='<div style="background:#fed7d7;color:#c53030;padding:8px 16px;font-size:11px;font-weight:600;">⚠️ No associates available for '+sec.title+' — consider calling OT or reassigning</div>';}
+sec.tasks.forEach(function(task,idx){var id=key+'_'+idx;
+// Filter pool for tasks with ownershipFilter requirement
+var taskPool=filteredPool;
+if(task.ownershipFilter){taskPool=filteredPool.filter(function(m){return(m.ownership||'').toUpperCase().indexOf(task.ownershipFilter.toUpperCase())>=0;});}
+// GL/SKED rotation logic: alternate primary ownership between GL Cases and SKED/AM Cases daily
+if(task.rotateGroup==='GL_SKED'){
+var rotDate=document.getElementById('allocDate').value;
+var dayNum=Math.floor((new Date(rotDate+'T00:00:00').getTime())/(86400000));
+var isEvenDay=(dayNum%2===0);
+var isGLTask=task.name.indexOf('GL Cases')>=0;
+// Check primary ownership: first part before "/"
+// SKED primary goes to one task, GL primary goes to the other, alternating daily
+// Associates with neither GL nor SKED as primary still appear in both (they're in the SKED pool already)
+taskPool=filteredPool.filter(function(m){
+var ow=(m.ownership||'').toUpperCase();
+var parts=ow.split(/\s*\/\s*/);
+var primary=parts[0].trim();
+var hasGL=parts.some(function(p){return p.trim()==='GL';});
+var hasSKED=parts.some(function(p){return p.trim()==='SKED';});
+// If primary is GL → assigned based on rotation
+if(primary==='GL'){return isEvenDay?isGLTask:!isGLTask;}
+// If primary is SKED → assigned based on rotation (opposite of GL)
+if(primary==='SKED'){return isEvenDay?!isGLTask:isGLTask;}
+// Others: check if they have GL or SKED anywhere — assign to SKED/AM Cases side
+if(hasGL){return isEvenDay?isGLTask:!isGLTask;}
+if(hasSKED){return isEvenDay?!isGLTask:isGLTask;}
+// No GL or SKED at all — assign to SKED/AM Cases by default (not both)
+return !isGLTask;
+});
+}// Alert if ownershipFilter task has no available associates
+var noPoolAlert='';
+if(task.ownershipFilter&&taskPool.length===0){noPoolAlert='<div style="background:#fed7d7;color:#c53030;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-bottom:4px;">⚠️ No ['+task.ownershipFilter+'] associates available — consider calling OT</div>';}
+// Rotation label for GL/SKED tasks
+var rotLabel='';
+if(task.rotateGroup==='GL_SKED'){
+var rotDate2=document.getElementById('allocDate').value;
+var dayNum2=Math.floor((new Date(rotDate2+'T00:00:00').getTime())/(86400000));
+var isEven2=(dayNum2%2===0);
+var isGL2=task.name.indexOf('GL Cases')>=0;
+var assignedTo=isEven2?(isGL2?'GL primary':'SKED primary'):(isGL2?'SKED primary':'GL primary');
+rotLabel=' <span style="font-size:9px;color:#2b6cb0;background:#ebf8ff;padding:1px 5px;border-radius:3px;">↻ '+assignedTo+'</span>';
+}
+h+='<div class="task-row"><div class="task-name">'+task.name+(task.ownershipFilter?' <span style="font-size:9px;color:#6b46c1;">['+task.ownershipFilter+']</span>':'')+rotLabel+'</div><div class="task-assignee">'+noPoolAlert;
+var dlId='dl_'+id;
+var optFn=function(m){var isOt=m.isOT||m._is6th||false;return '<option value="'+m.login+'">'+(isOt?(m.isOT?'(OT) ':'(6th) '):'')+'</option>';};
+var selOptFn=function(m){var isOt=m.isOT||m._is6th||false;return '<option value="'+m.login+'"'+(isOt?' style="color:#2b6cb0;font-weight:600;"':'')+'>'+m.login+(isOt?(m.isOT?' (OT)':' (6th)'):'')+'</option>';};
+if(task.allPocs){h+='<div><span class="all-pocs-label">All POCs (default)</span><div style="margin-top:4px;"><select id="sel_'+id+'" multiple size="2" onchange="updateWorkload()" style="font-size:11px;opacity:0.7;"><option value="ALL_POCS" selected>— All POCs —</option>';taskPool.forEach(function(m){h+=selOptFn(m);});h+='</select></div></div>';}
+else if(task.multi){h+='<select id="sel_'+id+'" multiple size="2" onchange="updateWorkload()"><option value="">--</option><option value="ALL_POCS">— All POCs —</option>';taskPool.forEach(function(m){h+=selOptFn(m);});h+='</select>';}
+else{h+='<input type="text" id="sel_'+id+'" list="'+dlId+'" placeholder="Type or select..." style="width:100%;padding:5px 8px;font-size:12px;" oninput="updateWorkload()" onchange="updateWorkload()"><datalist id="'+dlId+'"><option value="ALL_POCS">— All POCs —</option>';taskPool.forEach(function(m){h+=optFn(m);});h+='</datalist>';}
+h+='</div></div>';});h+='</div>';});
+document.getElementById('allTaskSections').innerHTML=h;updateWorkload();
+}
+function smartRandomize(){
+var antiMap=buildAntiRepeatMap();
+var globalCounts={};
+var halfDaySet={};
+// Build set of half-day associates from the available pools (already filtered correctly)
+[availableTeam.SKED,availableTeam.SFC,availableTeam.ICT,availableTeam.AIT].forEach(function(team){
+team.forEach(function(m){if(m._isHalf)halfDaySet[m.login]=true;});});
+function getCount(login){return globalCounts[login]||0;}
+function getAntiPenalty(taskKey,login){return(antiMap[taskKey]&&antiMap[taskKey][login])||0;}
+function getHalfDayPenalty(login){return halfDaySet[login]?2:0;}
+function pickOne(pool,taskKey){
+// Score = globalCount + antiRepeatPenalty*3 + halfDayPenalty*2
+var scored=pool.map(function(p){return{login:p,score:getCount(p)+getAntiPenalty(taskKey,p)*3+getHalfDayPenalty(p)};});
+var minScore=Math.min.apply(null,scored.map(function(s){return s.score;}));
+var candidates=scored.filter(function(s){return s.score<=minScore+1;});
+var pick=candidates[Math.floor(Math.random()*candidates.length)].login;
+return pick;
+}
+function pickMulti(pool,count,taskKey){
+var scored=pool.map(function(p){return{login:p,score:getCount(p)+getAntiPenalty(taskKey,p)*3+getHalfDayPenalty(p)+Math.random()*0.5};});
+scored.sort(function(a,b){return a.score-b.score;});
+return scored.slice(0,count).map(function(s){return s.login;});
+}
+
+Object.keys(TASKS).forEach(function(key){var sec=TASKS[key],pool=getPool(sec.group).map(function(m){return m.login;});
+if(!pool.length)return;
+// Filter: OT associates with a specific taskGroup should only appear in their assigned group
+var otRestricted={};
+otAssociates.forEach(function(o){if(o.taskGroup)otRestricted[o.login]=o.taskGroup;});
+var filteredPool=pool.filter(function(login){
+if(otRestricted[login]&&otRestricted[login]!==key)return false;
+return true;
+});
+if(!filteredPool.length)return;
+// If singlePerson: pick one person for all tasks in this section
+if(sec.singlePerson){
+var singlePick=pickOne(filteredPool,key+'_0');
+globalCounts[singlePick]=(globalCounts[singlePick]||0)+1;
+sec.tasks.forEach(function(task,idx){if(task.allPocs)return;var el=document.getElementById('sel_'+key+'_'+idx);if(!el)return;
+el.value=singlePick;});
+return;
+}
+sec.tasks.forEach(function(task,idx){if(task.allPocs)return;var el=document.getElementById('sel_'+key+'_'+idx);if(!el)return;
+var taskKey=key+'_'+idx;
+// Apply ownershipFilter for specific tasks
+var taskPool=filteredPool;
+if(task.ownershipFilter){taskPool=filteredPool.filter(function(login){var member=getPool(sec.group).find(function(m){return m.login===login;});return member&&(member.ownership||'').toUpperCase().indexOf(task.ownershipFilter.toUpperCase())>=0;});}
+// GL/SKED rotation in smartRandomize
+if(task.rotateGroup==='GL_SKED'){
+var rotDate=document.getElementById('allocDate').value;
+var dayNum=Math.floor((new Date(rotDate+'T00:00:00').getTime())/(86400000));
+var isEvenDay=(dayNum%2===0);
+var isGLTask=task.name.indexOf('GL Cases')>=0;
+taskPool=filteredPool.filter(function(login){var member=getPool(sec.group).find(function(m){return m.login===login;});if(!member)return false;
+var ow=(member.ownership||'').toUpperCase();var parts=ow.split(/\s*\/\s*/);var primary=parts[0].trim();
+var hasGL=parts.some(function(p){return p.trim()==='GL';});
+var hasSKED=parts.some(function(p){return p.trim()==='SKED';});
+if(primary==='GL'){return isEvenDay?isGLTask:!isGLTask;}
+if(primary==='SKED'){return isEvenDay?!isGLTask:isGLTask;}
+if(hasGL){return isEvenDay?isGLTask:!isGLTask;}
+if(hasSKED){return isEvenDay?!isGLTask:isGLTask;}
+return !isGLTask;});
+}
+if(!taskPool.length)return;
+if(task.multi){var cnt=Math.min(Math.max(2,Math.floor(taskPool.length/3)),taskPool.length);
+if(task.assignAll)cnt=taskPool.length;
+for(var o=0;o<el.options.length;o++)el.options[o].selected=false;
+var picks=pickMulti(taskPool,cnt,taskKey);
+picks.forEach(function(v){globalCounts[v]=(globalCounts[v]||0)+1;for(var o=0;o<el.options.length;o++){if(el.options[o].value===v)el.options[o].selected=true;}});}
+else{var v=pickOne(taskPool,taskKey);el.value=v;globalCounts[v]=(globalCounts[v]||0)+1;}});});
+updateWorkload();
+}
+function clearAll(){
+document.querySelectorAll('#allTaskSections select').forEach(function(el){
+if(el.multiple){for(var o=0;o<el.options.length;o++)el.options[o].selected=false;}else el.value='';});
+document.querySelectorAll('#allTaskSections input[type="text"][id^="sel_"]').forEach(function(el){el.value='';});
+updateWorkload();
+}
+function updateWorkload(){
+var counts={};
+document.querySelectorAll('#allTaskSections select').forEach(function(el){
+if(el.multiple){for(var o=0;o<el.options.length;o++){if(el.options[o].selected&&el.options[o].value&&el.options[o].value!=='ALL_POCS')counts[el.options[o].value]=(counts[el.options[o].value]||0)+1;}}
+else{if(el.value&&el.value!=='ALL_POCS')counts[el.value]=(counts[el.value]||0)+1;}});
+// Also count text inputs (single-assign with datalist)
+document.querySelectorAll('#allTaskSections input[type="text"][id^="sel_"]').forEach(function(el){
+var v=el.value.trim();if(v&&v!=='ALL_POCS')counts[v]=(counts[v]||0)+1;});
+var max=0;Object.values(counts).forEach(function(v){if(v>max)max=v;});
+var h='';Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).forEach(function(k){
+var pct=max?Math.round((counts[k]/max)*100):0;
+h+='<div class="workload-item"><div class="wl-name">'+k+'</div><div class="wl-bar"><div class="wl-fill" style="width:'+pct+'%"></div></div><div class="wl-count">'+counts[k]+'</div></div>';});
+document.getElementById('workloadChart').innerHTML=h||'<div style="color:#a0aec0;font-size:12px;">Assign tasks to see workload</div>';
+}
+function showTab(tab){
+document.getElementById('tabPreview').classList.toggle('hidden',tab!=='preview');
+document.getElementById('tabEdit').classList.toggle('hidden',tab!=='edit');
+if(tab==='edit')document.getElementById('emailEditor').value=emailHtml;
+}
+
+// ===== SCHEDULE PARSING =====
+function parseSchedule(){
+var s=document.getElementById('scheduleDataSKED').value.trim(),sfc=document.getElementById('scheduleDataSFC').value.trim(),ic=document.getElementById('scheduleDataICT').value.trim(),ai=document.getElementById('scheduleDataAIT').value.trim();
+if(!s&&!sfc&&!ic&&!ai){alert('Paste at least one schedule or use Load Sample Data.');return;}
+scheduleData={SKED:[],SFC:[],ICT:[],AIT:[]};
+if(s){parseSkedSheet(s);}
+if(sfc){parseSfcSheet(sfc);}
+if(ic){parseSheet(ic).forEach(function(m){if(!m.ownership||m.ownership==='SKED')m.ownership='ICT';scheduleData.ICT.push(m);});}
+if(ai){parseSheet(ai).forEach(function(m){if(!m.ownership||m.ownership==='SKED')m.ownership='AIT';scheduleData.AIT.push(m);});}
+var t=scheduleData.SKED.length+scheduleData.SFC.length+scheduleData.ICT.length+scheduleData.AIT.length;
+document.getElementById('parseResult').innerHTML='<div class="alert alert-success">✅ Parsed <b>'+t+'</b> members (SKED:'+scheduleData.SKED.length+' SFC:'+scheduleData.SFC.length+' ICT:'+scheduleData.ICT.length+' AIT:'+scheduleData.AIT.length+')</div>';
+document.getElementById('parseResult').classList.remove('hidden');
+if(t>0){document.getElementById('allocDate').value=new Date().toISOString().split('T')[0];goToStep(2);}
+}
+function parseSkedSheet(raw){
+// Parse SKED data — if it contains SFC section headers, split them out
+var lines=raw.split('\n');
+var hasSfcHeader=false;
+for(var i=0;i<lines.length;i++){var ll=lines[i].toLowerCase();if(/shift\s*\d/i.test(ll)&&ll.indexOf('sfc')>=0&&ll.indexOf('sked')<0){hasSfcHeader=true;break;}}
+if(hasSfcHeader){
+// Combined paste — use old logic to split
+parseSkedSfcSheet(raw);
+}else{
+parseSheet(raw).forEach(function(m){scheduleData.SKED.push(m);});
+}
+}
+function parseSfcSheet(raw){
+// Parse SFC-only data
+parseSheet(raw).forEach(function(m){scheduleData.SFC.push(m);});
+}
+function parseSkedSfcSheet(raw){
+var lines=raw.split('\n');
+var sectionLines={SKED:[],SFC:[]};var currentSection=null;var headerRe=/shift\s*\d/i;
+for(var i=0;i<lines.length;i++){var line=lines[i].trim();var lineLower=line.toLowerCase();var cols=line.split('\t');var firstCol=cols[0]?cols[0].trim().toLowerCase():'';
+if(headerRe.test(lineLower)&&(lineLower.indexOf('sfc')>=0||lineLower.indexOf('sked')>=0)){
+var isHeader=false;
+// Check if this is a section header (not a data row) — look for section-like patterns
+if(firstCol===''||firstCol.match(/^shift/i)){isHeader=true;}
+else if(firstCol.length<20&&!firstCol.match(/^[a-z]{4,12}$/)){isHeader=true;}
+// Also check cols[1] for "Shift X SKED/SFC" pattern
+if(!isHeader){for(var ci=0;ci<Math.min(3,cols.length);ci++){var cv=(cols[ci]||'').trim().toLowerCase();if(cv.match(/^shift\s*\d/)&&(cv.indexOf('sfc')>=0||cv.indexOf('sked')>=0)){isHeader=true;break;}}}
+if(isHeader){
+if(lineLower.indexOf('sfc')>=0&&lineLower.indexOf('sked')<0)currentSection='SFC';else currentSection='SKED';
+var hasDate=false;for(var j=0;j<cols.length;j++){if(cols[j]&&cols[j].trim().match(/^\d{1,2}\/\d{1,2}\/\d{2,4}/)){hasDate=true;break;}}
+if(hasDate){sectionLines[currentSection].push(lines[i]);}continue;}}
+if(currentSection&&lines[i].trim()){sectionLines[currentSection].push(lines[i]);}}
+if(sectionLines.SFC.length>0&&sectionLines.SKED.length>0){
+parseSheet(sectionLines.SKED.join('\n')).forEach(function(m){scheduleData.SKED.push(m);});
+parseSheet(sectionLines.SFC.join('\n')).forEach(function(m){scheduleData.SFC.push(m);});
+}else{parseSheet(raw).forEach(function(m){var ow=m.ownership.toUpperCase();var primary=ow.split(/\s*\/\s*/)[0].trim();if(primary==='SFC')scheduleData.SFC.push(m);else scheduleData.SKED.push(m);});}
+}
+function parseSheet(raw){
+var lines=raw.split('\n').filter(function(l){return l.trim();}),results=[],dates=[],dsc=-1,datesDone=false,shiftOffset=-1;
+for(var i=0;i<lines.length;i++){var cols=lines[i].split('\t');
+if(!datesDone){var foundDates=false;
+for(var j=0;j<cols.length;j++){var c=cols[j].trim();if(c.match(/^\d{4}-\d{2}-\d{2}/)||c.match(/^\d{1,2}\/\d{1,2}\/\d{2,4}/)||c.match(/^\d{5}$/)){foundDates=true;if(dsc<0)dsc=j;break;}}
+if(foundDates){var startCol=dsc;if(j<dsc)startCol=j;
+for(var k=startCol;k<cols.length;k++){var d=cols[k].trim();
+if(d.match(/^\d{4}-\d{2}-\d{2}/))dates.push(d.substring(0,10));
+else if(d.match(/^\d{1,2}\/\d{1,2}\/\d{2,4}/)){var parts=d.split('/');var yr=parseInt(parts[2]);if(yr<100)yr+=2000;var mo=('0'+parts[0]).slice(-2);var dy=('0'+parts[1]).slice(-2);dates.push(yr+'-'+mo+'-'+dy);}
+else if(d.match(/^\d{5}$/)){var dt=new Date((parseInt(d)-25569)*86400000);dates.push(dt.toISOString().split('T')[0]);}}continue;}
+if(dsc>=0)datesDone=true;}
+var login=cols[0]?cols[0].trim():'';
+if(!login||login.length<3)continue;
+if(login==='Associates'||login==='Login'||login==='Day')continue;
+if(login.match(/^(Planned|Total|Avaialble|HC on|Shrinkage|6th|Actual|Sun|Mon|Tue|Wed|Thu|Fri|Sat)/))continue;
+if(login.match(/^\d{1,2}\/\d{1,2}\/\d{2,4}/)||login.match(/^\d{4}-\d{2}-\d{2}/)||login.match(/^\d{5}$/))continue;
+if(login.indexOf('Shift')>=0)continue;
+var ownership='SKED';var owCol=-1;
+for(var m=1;m<Math.min(dsc<0?5:dsc,cols.length);m++){var cv=cols[m]?cols[m].trim().toUpperCase():'';if(cv.indexOf('/')>=0||(cv&&(cv==='SFC'||cv==='SKED'||cv==='ICT'||cv==='AIT'||cv.indexOf('SKED')>=0||cv.indexOf('SFC')>=0||cv.indexOf('GL')>=0||cv.indexOf('DM')>=0||cv.indexOf('IM')>=0||cv.indexOf('IMPORTS')>=0||cv.indexOf('RES')>=0))){ownership=cols[m].trim();owCol=m;break;}}
+var shifts={};
+// Find where shifts actually start for this row
+var rowShiftStart=dsc;
+if(shiftOffset>=0){rowShiftStart=dsc+shiftOffset;}
+else{
+// Calculate offset from first valid data row
+for(var sc=dsc;sc<Math.min(dsc+8,cols.length);sc++){
+var tv=cols[sc]?cols[sc].trim():'';
+if(tv&&tv.match(/^(Shift|OFF|AL|CL|SL|FHCL|FHSL|SHCL|SHSL|SHAL|FHAL|Training|OPT OFF|Mandatory OFF|6th Day|6th|NCNS)/i)){shiftOffset=sc-dsc;rowShiftStart=sc;break;}
+}
+if(shiftOffset<0){shiftOffset=0;rowShiftStart=dsc;}
+}
+for(var n=rowShiftStart;n<cols.length;n++){var di=n-rowShiftStart;if(di<dates.length&&dates[di]){var v=cols[n]?cols[n].trim():'';if(v&&v.match(/^(Shift|OFF|AL|CL|SL|FHCL|FHSL|SHCL|SHSL|SHAL|FHAL|Training|OPT OFF|Mandatory OFF|6th Day|6th|NCNS)/i))shifts[dates[di]]=v;}}
+if(Object.keys(shifts).length>0)results.push({login:login,ownership:ownership,shifts:shifts});}
+return results;
+}
+function isHalfDay(shiftValue){
+if(!shiftValue)return false;
+var v=shiftValue.toUpperCase();
+return v==='FHCL'||v==='SHCL'||v==='FHSL'||v==='SHSL'||v==='FHAL'||v==='SHAL';
+}
+function is6thDayOT(shiftValue){
+if(!shiftValue)return false;
+var v=shiftValue.toLowerCase().trim();
+// Match anything containing "6th" that isn't just "off"
+if(v.indexOf('6th')>=0)return true;
+// Match "OPT OFF Working" or similar OT patterns (not plain "OPT OFF" which means not working)
+if(v==='opt off working')return true;
+return false;
+}
+function isWorking(shiftValue, selectedShift){
+// Exact match for the selected shift
+if(shiftValue===selectedShift)return true;
+var v=shiftValue?shiftValue.toLowerCase().trim():'';
+// "6th Day" variants count as working (OT in same shift)
+if(v.indexOf('6th')>=0)return true;
+// "OPT OFF Working" counts as working
+if(v==='opt off working')return true;
+// Half-day leaves: only count as working if associate's normal shift matches the selected shift
+// We determine this by NOT matching here — handled in detectAvailability with context
+return false;
+}
+function isHalfDayWorking(member, date, selectedShift){
+// Check if member has a half-day on this date AND their normal shift matches selectedShift
+var val=member.shifts[date];
+if(!isHalfDay(val))return false;
+// Determine their normal shift by checking nearby dates
+var dates=Object.keys(member.shifts).sort();
+for(var i=0;i<dates.length;i++){
+var v=member.shifts[dates[i]];
+if(v&&v.match(/^Shift \d$/)){
+// Found their normal shift
+return v===selectedShift;
+}
+}
+return false;
+}
+function detectAvailability(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+if(!date||!shift)return;
+availableTeam={SKED:[],SFC:[],ICT:[],AIT:[],IMPORTS:[]};
+scheduleData.SKED.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.SKED.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.SKED.push(m);}});
+scheduleData.SFC.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.SFC.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.SFC.push(m);}});
+scheduleData.ICT.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.ICT.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.ICT.push(m);}});
+scheduleData.AIT.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.AIT.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.AIT.push(m);}});
+// Build IMPORTS pool: only associates with IMPORTS explicitly in their ownership
+availableTeam.SKED.concat(availableTeam.SFC).forEach(function(m){
+var ow=(m.ownership||'').toUpperCase();
+if(ow.indexOf('IMPORTS')>=0){
+availableTeam.IMPORTS.push(m);
+}
+});
+// Add OT associates to their respective team pools
+otAssociates.forEach(function(o){
+var otMember={login:o.login,ownership:o.team,shifts:{},isOT:true,taskGroup:o.taskGroup};
+if(o.team==='SKED'&&!availableTeam.SKED.some(function(m){return m.login===o.login;}))availableTeam.SKED.push(otMember);
+else if(o.team==='SFC'&&!availableTeam.SFC.some(function(m){return m.login===o.login;}))availableTeam.SFC.push(otMember);
+else if(o.team==='ICT'&&!availableTeam.ICT.some(function(m){return m.login===o.login;}))availableTeam.ICT.push(otMember);
+else if(o.team==='AIT'&&!availableTeam.AIT.some(function(m){return m.login===o.login;}))availableTeam.AIT.push(otMember);
+});
+var total=availableTeam.SKED.length+availableTeam.SFC.length+availableTeam.ICT.length+availableTeam.AIT.length;
+document.getElementById('statsBar').innerHTML='<div class="stat-item"><div class="num">'+total+'</div><div class="label">Total</div></div><div class="stat-item"><div class="num">'+availableTeam.SKED.length+'</div><div class="label">SKED</div></div><div class="stat-item"><div class="num">'+availableTeam.SFC.length+'</div><div class="label">SFC</div></div><div class="stat-item"><div class="num">'+availableTeam.ICT.length+'</div><div class="label">ICT</div></div><div class="stat-item"><div class="num">'+availableTeam.AIT.length+'</div><div class="label">AIT</div></div>';
+var g='';var selDate=document.getElementById('allocDate').value;
+[{a:availableTeam.SKED,l:'SKED/GL',b:'badge-sked'},{a:availableTeam.SFC,l:'SFC',b:'badge-sfc'},{a:availableTeam.ICT,l:'ICT',b:'badge-ict'},{a:availableTeam.AIT,l:'AIT',b:'badge-ait'}].forEach(function(x){
+g+='<div style="margin-top:10px;"><span class="badge '+x.b+'">'+x.l+' ('+x.a.length+')</span><div class="team-grid">';
+x.a.forEach(function(m){var hd=m._isHalf||false;var ot=m.isOT||false;var sixthDayOT=m._is6th||false;g+='<div class="team-member" style="'+(ot||sixthDayOT?'background:#bee3f8;border-color:#3182ce;':hd?'background:#fffaf0;border-color:#fbd38d;':'')+'"><span class="dot" style="'+((ot||sixthDayOT)?'background:#2b6cb0;':hd?'background:#dd6b20;':'')+'"></span>'+m.login+(ot?' <span style="font-size:9px;color:#2b6cb0;font-weight:700;">OT</span>':sixthDayOT?' <span style="font-size:9px;color:#2b6cb0;font-weight:700;">6th</span>':hd?' <span style="font-size:9px;color:#c05621;">½</span>':'')+'</div>';});g+='</div></div>';});
+document.getElementById('teamGrids').innerHTML=g;
+document.getElementById('availabilityResult').classList.remove('hidden');
+}
+
+// ===== EMAIL GENERATION =====
+function generateEmail(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var mgr=document.getElementById('managerName').value||'Manager';
+var d=new Date(date+'T00:00:00');var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var dateStr=days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
+var shiftNum=shift.replace('Shift ','');
+var now=new Date();var timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true})+' IST';
+var dateShort=d.getDate()+' '+months[d.getMonth()].substring(0,3)+' '+d.getFullYear();
+var totalAvail=availableTeam.SKED.length+availableTeam.SFC.length+availableTeam.ICT.length+availableTeam.AIT.length;
+var allNames=[];
+availableTeam.SKED.forEach(function(m){allNames.push(m.login);});
+availableTeam.SFC.forEach(function(m){allNames.push(m.login);});
+availableTeam.ICT.forEach(function(m){allNames.push(m.login);});
+availableTeam.AIT.forEach(function(m){allNames.push(m.login);});
+var assignments={};
+Object.keys(TASKS).forEach(function(key){var sec=TASKS[key];
+sec.tasks.forEach(function(task,idx){
+var el=document.getElementById('sel_'+key+'_'+idx);
+if(task.allPocs){
+if(!el){assignments[key+'_'+idx]={name:task.name,assignee:'All POCs',allPocs:true};return;}
+var val=[];var isAllPocs=false;
+for(var o=0;o<el.options.length;o++){if(el.options[o].selected){if(el.options[o].value==='ALL_POCS')isAllPocs=true;else if(el.options[o].value)val.push(el.options[o].value);}}
+if(isAllPocs||val.length===0){assignments[key+'_'+idx]={name:task.name,assignee:'All POCs',allPocs:true};}
+else{assignments[key+'_'+idx]={name:task.name,assignee:val.join(', '),allPocs:false};}
+}
+else{if(!el)return;
+var val=[];if(el.multiple){for(var o=0;o<el.options.length;o++){if(el.options[o].selected&&el.options[o].value)val.push(el.options[o].value);}}
+else if(el.value)val.push(el.value);
+assignments[key+'_'+idx]={name:task.name,assignee:val.join(', ')||'—',allPocs:false};}});});
+var html='<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:20px;background:#f0f4f8;">';
+html+='<table cellpadding="0" cellspacing="0" border="0" width="600" align="center" style="font-family:Segoe UI,Arial,sans-serif;border-collapse:collapse;max-width:600px;margin:0 auto;">';
+html+='<tr><td style="background:#1a1f36;padding:24px 28px;border-radius:8px 8px 0 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>';
+html+='<td style="vertical-align:top;"><div style="color:#8b92a5;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">RSO IB · IPEX TEAM</div>';
+html+='<div style="color:#ffffff;font-size:20px;font-weight:700;margin-bottom:3px;">IPEX Daily Work Allocation</div>';
+html+='<div style="color:#a0a8c0;font-size:12px;">Line Haul ROC Field · '+dateStr+'</div></td>';
+html+='<td style="vertical-align:top;text-align:right;width:70px;"><div style="background:#1e2540;border:2px solid #6c63ff;border-radius:6px;padding:8px 12px;display:inline-block;text-align:center;">';
+html+='<div style="color:#ffffff;font-size:18px;font-weight:800;line-height:1;">S'+shiftNum+'</div>';
+html+='<div style="color:#a0a8c0;font-size:9px;margin-top:2px;">Shift '+shiftNum+'</div></div></td></tr></table></td></tr>';
+html+='<tr><td style="background:#f8f9fb;padding:12px 28px;border-bottom:1px solid #e8ecf0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>';
+html+='<td width="25%" style="text-align:center;padding:4px;"><span style="color:#718096;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;display:block;">Date</span><span style="color:#1a202c;font-size:13px;font-weight:600;">'+date+'</span></td>';
+html+='<td width="25%" style="text-align:center;padding:4px;border-left:1px solid #e2e8f0;"><span style="color:#718096;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;display:block;">Shift</span><span style="color:#1a202c;font-size:13px;font-weight:600;">Shift '+shiftNum+'</span></td>';
+html+='<td width="25%" style="text-align:center;padding:4px;border-left:1px solid #e2e8f0;"><span style="color:#718096;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;display:block;">Associates</span><span style="color:#ff9900;font-size:16px;font-weight:700;">'+totalAvail+'</span></td>';
+html+='<td width="25%" style="text-align:center;padding:4px;border-left:1px solid #e2e8f0;"><span style="color:#718096;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;display:block;">Generated</span><span style="color:#1a202c;font-size:13px;font-weight:600;">'+timeStr+'</span></td>';
+html+='</tr></table></td></tr>';
+html+='<tr><td style="padding:14px 28px;border-bottom:1px solid #e8ecf0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>';
+html+='<td style="vertical-align:top;width:50%;"><div style="color:#718096;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;">Shift Manager On Duty</div>';
+html+='<div style="color:#e53e3e;font-size:14px;font-weight:700;margin-top:3px;">'+mgr+'</div></td>';
+html+='<td style="vertical-align:top;width:50%;padding-left:16px;border-left:1px solid #e2e8f0;"><div style="color:#718096;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;">Associates Available</div>';
+html+='<div style="color:#6c63ff;font-size:11px;font-weight:600;margin-top:3px;line-height:1.4;">'+allNames.join(', ')+'</div></td>';
+html+='</tr></table></td></tr>';
+Object.keys(TASKS).forEach(function(key){var sec=TASKS[key];
+html+='<tr><td style="padding:16px 28px 0 28px;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">';
+html+='<tr><td colspan="2" style="background:'+sec.color+';color:#ffffff;padding:9px 14px;font-size:13px;font-weight:700;border-radius:5px 5px 0 0;">'+sec.icon+' '+sec.title.toUpperCase()+'</td></tr>';
+html+='<tr style="background:#f1f3f5;"><td style="padding:6px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;font-weight:600;border:1px solid #e8ecf0;border-right:none;width:60%;">Task</td>';
+html+='<td style="padding:6px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;font-weight:600;border:1px solid #e8ecf0;border-left:none;width:40%;">Assigned</td></tr>';
+sec.tasks.forEach(function(task,idx){var a=assignments[key+'_'+idx];var bg=(idx%2===0)?'#ffffff':'#f9fafb';
+html+='<tr><td style="padding:8px 14px;font-size:12px;color:#2d3748;background:'+bg+';border-left:1px solid #e8ecf0;border-bottom:1px solid #f0f4f8;">'+a.name+'</td>';
+html+='<td style="padding:8px 14px;font-size:12px;font-weight:'+(a.allPocs?'400':'600')+';color:'+(a.allPocs?'#718096':'#1a202c')+';background:'+bg+';border-right:1px solid #e8ecf0;border-bottom:1px solid #f0f4f8;">'+(a.allPocs?'All POCs':a.assignee)+'</td></tr>';});
+html+='</table></td></tr>';});
+if(RESOURCES.length>0){
+html+='<tr><td style="padding:16px 28px 0 28px;"><div style="padding:12px 14px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+html+='<div style="font-size:10px;font-weight:600;color:#4a5568;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">IPEX Resources</div>';
+RESOURCES.forEach(function(r){html+='<div style="margin-bottom:4px;font-size:12px;">'+r.icon+' <a href="'+r.url+'" style="color:#2b6cb0;text-decoration:none;font-weight:600;">'+r.label+'</a></div>';});
+html+='</div></td></tr>';}
+html+='<tr><td style="padding:16px 28px;"><div style="padding:10px 14px;background:#f8f7ff;border-left:3px solid #6c63ff;border-radius:3px;font-size:11px;color:#4a5568;">';
+html+='<strong>Note:</strong> If you have any concerns, reach out to: <strong style="color:#e53e3e;">'+mgr+'</strong>. All POC tasks are shared responsibility.</div></td></tr>';
+html+='<tr><td style="background:#1a1f36;padding:14px 28px;border-radius:0 0 8px 8px;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>';
+html+='<td style="color:#6b7280;font-size:10px;">RSO IB · IPEX Work Allocation · Line Haul ROC Field · '+d.getFullYear()+'</td>';
+html+='<td style="text-align:right;color:#6b7280;font-size:10px;">Generated: '+dateShort+', '+timeStr+'</td>';
+html+='</tr></table></td></tr></table></body></html>';
+emailHtml=html;
+document.getElementById('emailPreviewFrame').innerHTML=html;
+document.getElementById('emailEditor').value=html;
+}
+function downloadEml(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var shiftNum=shift.replace('Shift ','');
+var subject='IPEX Work Allocation | Shift '+shiftNum+' | '+date;
+var body=document.getElementById('emailEditor').value||emailHtml;
+var eml='To: hyd-ipex@amazon.com\r\nCC: roc-hyd-equipment@amazon.com; hyd-reactive-sched@amazon.com; hyd-intermodal@amazon.com; hyd-ats-ltl@amazon.com; hyd-af-leads@amazon.com; dm-shift1-managers@amazon.com; dm-shift3-managers@amazon.com\r\nSubject: '+subject+'\r\nX-Unsent: 1\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n'+body;
+var blob=new Blob([eml],{type:'message/rfc822'});
+var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+a.download='IPEX_Work_Allocation_Shift'+shiftNum+'_'+date+'.eml';a.click();
+}
+function copyToClipboard(){
+var body=document.getElementById('emailEditor').value||emailHtml;
+navigator.clipboard.writeText(body).then(function(){alert('✅ HTML copied to clipboard!');});
+}
+function renderResources(){
+var h='';RESOURCES.forEach(function(r,i){
+h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:6px 10px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+h+='<span style="font-size:12px;flex:1;">'+r.icon+' <a href="'+r.url+'" target="_blank" style="color:#2b6cb0;text-decoration:none;">'+r.label+'</a></span>';
+h+='<span style="font-size:10px;color:#a0aec0;flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+r.url+'</span>';
+h+='<button class="btn btn-danger btn-sm" style="padding:2px 8px;font-size:10px;" onclick="removeResource('+i+')">✕</button></div>';});
+if(!RESOURCES.length)h='<div style="color:#a0aec0;font-size:12px;">No resources added.</div>';
+document.getElementById('resourcesList').innerHTML=h;
+}
+function addResource(){
+var label=document.getElementById('resLabel').value.trim(),url=document.getElementById('resUrl').value.trim();
+if(!label||!url){alert('Enter both label and URL.');return;}
+RESOURCES.push({label:label,icon:'🔗',url:url});document.getElementById('resLabel').value='';document.getElementById('resUrl').value='';renderResources();
+}
+function removeResource(idx){RESOURCES.splice(idx,1);renderResources();}
+
+// ===== SAMPLE DATA =====
+function loadSampleData(){
+scheduleData.SKED=[
+{login:'tejkuchc',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'sivakric',ownership:'SKED/GL/SFC',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'gnanreba',ownership:'SKED/GL/SFC',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'aleemmdu',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'deeksj',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'udaykaki',ownership:'SKED/GL',shifts:{'2026-06-05':'OFF','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'OFF'}},
+{login:'chalvadh',ownership:'GL/SKED/DM',shifts:{'2026-06-05':'FHSL','2026-06-06':'Shift 3','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'lagiddiv',ownership:'GL/SKED/DM',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'OFF','2026-06-10':'OFF','2026-06-11':'Shift 3'}},
+{login:'suymahes',ownership:'GL/SKED/IM/DM',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'cdamini',ownership:'GL/SKED/DM',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'dpsandy',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'OFF','2026-06-11':'OFF'}},
+{login:'rohinisr',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'CL','2026-06-09':'OFF','2026-06-10':'OFF','2026-06-11':'Shift 3'}},
+{login:'xmanasak',ownership:'SKED/SFC/GL',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'sudeesou',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 1','2026-06-06':'FHCL','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'OFF','2026-06-10':'OFF','2026-06-11':'Shift 1'}},
+{login:'vishperk',ownership:'GL/SKED/DM',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'OFF','2026-06-10':'OFF','2026-06-11':'Shift 1'}},
+{login:'mukkumg',ownership:'GL/SKED/IM/DM',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'yavenka',ownership:'GL/SKED/DM',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'irajeevi',ownership:'GL/SKED/DM',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'ymkaruna',ownership:'GL/SKED/IM/DM',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'nambuj',ownership:'SKED/GL/IM',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'OFF','2026-06-11':'OFF'}},
+{login:'sohailkn',ownership:'SKED/GL',shifts:{'2026-06-05':'SL','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'OFF','2026-06-09':'OFF','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'morigm',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'bhanumc',ownership:'SKED/GL',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'ranivara',ownership:'SKED/GL',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}}
+];
+scheduleData.SFC=[
+{login:'wabhisdu',ownership:'SFC',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'babithaj',ownership:'SFC/SKED',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'CL','2026-06-08':'OFF','2026-06-09':'OFF','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'saadwait',ownership:'SFC',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'tamaranp',ownership:'SFC/SKED/GL',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'OFF','2026-06-09':'OFF','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'xshabaz',ownership:'SFC',shifts:{'2026-06-05':'OFF','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'OFF'}},
+{login:'soodhan',ownership:'SFC',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'afshaaaa',ownership:'SFC/SKED/GL',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'OFF','2026-06-10':'OFF','2026-06-11':'Shift 1'}},
+{login:'fasiaish',ownership:'SFC',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'emsami',ownership:'SFC/SKED/GL',shifts:{'2026-06-05':'OFF','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'OFF'}}
+];
+scheduleData.ICT=[
+{login:'gareddyj',ownership:'ICT',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'imadaba',ownership:'ICT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'OFF','2026-06-09':'OFF','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'mahego',ownership:'ICT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'dagadev',ownership:'ICT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'adhatrow',ownership:'ICT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'gsprichi',ownership:'ICT',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'jaarpita',ownership:'ICT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'OFF','2026-06-11':'OFF'}},
+{login:'amalfaza',ownership:'ICT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'kridavu',ownership:'ICT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}}
+];
+scheduleData.AIT=[
+{login:'akodhshw',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'cnprave',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'dhawanvl',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'bujalson',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'OFF','2026-06-11':'OFF'}},
+{login:'jyobudat',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'kudikya',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'OFF','2026-06-11':'Shift 1'}},
+{login:'mcabdulw',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'yampally',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'OFF','2026-06-09':'OFF','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'nvvippar',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'nrsraj',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'ksaikus',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'Shift 1'}},
+{login:'cdkarana',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'OFF','2026-06-10':'OFF','2026-06-11':'Shift 1'}},
+{login:'kavyapvs',ownership:'AIT',shifts:{'2026-06-05':'Shift 1','2026-06-06':'OFF','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'OFF','2026-06-11':'Shift 1'}},
+{login:'jusamree',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'Shift 1','2026-06-07':'Shift 1','2026-06-08':'Shift 1','2026-06-09':'Shift 1','2026-06-10':'Shift 1','2026-06-11':'OFF'}},
+{login:'zfaisalm',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'saidherj',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'gmedidha',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'hazimraf',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'OFF','2026-06-10':'OFF','2026-06-11':'Shift 3'}},
+{login:'owaisreh',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'OFF','2026-06-11':'Shift 3'}},
+{login:'sailajes',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'faizmhf',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'OFF','2026-06-09':'OFF','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'ramyaval',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'OFF','2026-06-11':'Shift 3'}},
+{login:'ranjiii',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'Shift 3','2026-06-07':'OFF','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'amgutti',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'Shift 3','2026-06-08':'OFF','2026-06-09':'OFF','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'usmanmxx',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'Shift 3','2026-06-07':'OFF','2026-06-08':'OFF','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'deekurre',ownership:'AIT',shifts:{'2026-06-05':'OFF','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'Shift 3','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'Shift 3'}},
+{login:'nandhooo',ownership:'AIT',shifts:{'2026-06-05':'Shift 3','2026-06-06':'OFF','2026-06-07':'Shift 3','2026-06-08':'OFF','2026-06-09':'Shift 3','2026-06-10':'Shift 3','2026-06-11':'OFF'}}
+];
+var t=scheduleData.SKED.length+scheduleData.SFC.length+scheduleData.ICT.length+scheduleData.AIT.length;
+document.getElementById('parseResult').innerHTML='<div class="alert alert-success">✅ Sample loaded! <b>'+t+'</b> associates (SKED:'+scheduleData.SKED.length+' SFC:'+scheduleData.SFC.length+' ICT:'+scheduleData.ICT.length+' AIT:'+scheduleData.AIT.length+')<br>📅 Jun 5–11, 2026</div>';
+document.getElementById('parseResult').classList.remove('hidden');
+document.getElementById('allocDate').value='2026-06-07';goToStep(2);
+}
+
+// ===== AUTO-LOAD HISTORY ON START =====
+// Try to load history.json from same directory (works when served via HTTP)
+(function(){
+try{
+fetch('ipex_history.json').then(function(r){if(r.ok)return r.json();throw new Error('not found');}).then(function(data){
+if(Array.isArray(data)&&data.length>0){
+var existing=getHistory();
+var map={};
+existing.forEach(function(e){map[e.date+'|'+e.shift]=e;});
+data.forEach(function(e){map[e.date+'|'+e.shift]=e;});
+var merged=Object.values(map);
+merged.sort(function(a,b){return b.date.localeCompare(a.date)||b.shift.localeCompare(a.shift);});
+saveHistoryData(merged);
+}
+}).catch(function(){});
+}catch(e){}
+})();
+</script>
+
+</body>
+</html>
