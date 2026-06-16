@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Break Slot Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; padding: 20px 0 30px; }
+        .header h1 { font-size: 28px; color: #ffffff; margin-bottom: 5px; }
+        .header p { color: #a0aec0; font-size: 14px; }
+        .shift-info {
+            display: flex; justify-content: center; gap: 20px;
+            margin: 15px 0; flex-wrap: wrap;
+        }
+        .shift-badge {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px; padding: 8px 16px; font-size: 13px;
+        }
+        .shift-badge span { color: #63b3ed; font-weight: 600; }
+        .login-section {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 20px;
+            margin-bottom: 25px; text-align: center;
+        }
+        .login-section label { font-size: 14px; color: #a0aec0; }
+        .login-section input {
+            margin: 10px; padding: 10px 16px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: #fff; font-size: 14px; width: 200px;
+        }
+        .login-section input:focus { outline: none; border-color: #63b3ed; }
+        .login-section button {
+            padding: 10px 24px; border-radius: 8px; border: none;
+            background: #3182ce; color: #fff; font-size: 14px;
+            cursor: pointer; font-weight: 600;
+        }
+        .login-section button:hover { background: #2b6cb0; }
+        .date-display {
+            text-align: center; margin-bottom: 20px;
+            font-size: 16px; color: #63b3ed; font-weight: 600;
+        }
+        .legend {
+            display: flex; justify-content: center; gap: 20px;
+            margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #a0aec0; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+        .legend-dot.available { background: #2d3748; border: 1px solid #4a5568; }
+        .legend-dot.booked { background: #2b6cb0; }
+        .legend-dot.full { background: #e53e3e; }
+        .legend-dot.yours { background: #38a169; }
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px; margin-bottom: 30px;
+        }
+        .slot-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 14px; transition: all 0.2s;
+        }
+        .slot-card:hover:not(.full) {
+            border-color: #63b3ed; transform: translateY(-2px);
+        }
+        .slot-card.full { border-color: #e53e3e; background: rgba(229,62,62,0.1); }
+        .slot-card.has-yours { border-color: #38a169; background: rgba(56,161,105,0.1); }
+        .slot-card.mgr-card { cursor: default; }
+        .slot-card.mgr-card:hover { transform: none; }
+        .slot-time { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+        .slot-capacity { font-size: 12px; color: #a0aec0; margin-bottom: 8px; }
+        .capacity-bar {
+            height: 4px; background: #2d3748; border-radius: 2px;
+            overflow: hidden; margin-bottom: 10px;
+        }
+        .capacity-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        .capacity-fill.low { background: #38a169; }
+        .capacity-fill.medium { background: #d69e2e; }
+        .capacity-fill.high { background: #e53e3e; }
+        .book-btn {
+            display: inline-block; margin-top: 8px; padding: 6px 14px;
+            background: #3182ce; color: #fff; border: none;
+            border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .book-btn:hover { background: #2b6cb0; }
+        .book-btn:disabled { background: #4a5568; cursor: not-allowed; opacity: 0.6; }
+        .booked-names { margin-top: 6px; font-size: 11px; color: #a0aec0; }
+        .booked-names .your-name { color: #68d391; font-weight: 600; }
+        .footer { text-align: center; padding: 20px; color: #4a5568; font-size: 12px; }
+        .reset-notice {
+            text-align: center; background: rgba(99,179,237,0.1);
+            border: 1px solid rgba(99,179,237,0.2);
+            border-radius: 8px; padding: 10px; margin-bottom: 20px;
+            font-size: 12px; color: #63b3ed;
+        }
+        .hidden { display: none; }
+        /* Tab navigation */
+        .tab-nav {
+            display: flex; justify-content: center; gap: 0;
+            margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        .tab-btn {
+            padding: 12px 28px; border: none; background: none;
+            color: #a0aec0; font-size: 14px; font-weight: 600;
+            cursor: pointer; border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { color: #63b3ed; }
+        .tab-btn.active { color: #63b3ed; border-bottom-color: #63b3ed; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* Manager summary */
+        .manager-summary {
+            display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; justify-content: center;
+        }
+        .summary-card {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px; padding: 12px 20px; text-align: center;
+        }
+        .summary-card .num { font-size: 22px; font-weight: 700; color: #63b3ed; }
+        .summary-card .lbl { font-size: 11px; color: #a0aec0; margin-top: 2px; }
+        /* Export button */
+        .export-btn {
+            padding: 8px 18px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08); color: #63b3ed; font-size: 13px;
+            cursor: pointer; font-weight: 600; transition: all 0.2s;
+        }
+        .export-btn:hover { background: rgba(255,255,255,0.15); }
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+        }
+        .toolbar-title { font-size: 15px; color: #fff; font-weight: 600; }
+        /* History table */
+        .history-table-wrap {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 20px; overflow-x: auto;
+        }
+        .history-table {
+            width: 100%; border-collapse: collapse; font-size: 13px;
+        }
+        .history-table th {
+            text-align: left; padding: 10px 12px;
+            background: rgba(255,255,255,0.08); color: #63b3ed;
+            border-bottom: 1px solid rgba(255,255,255,0.15); font-weight: 600;
+        }
+        .history-table td {
+            padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); color: #e0e0e0;
+        }
+        .history-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .history-date-selector {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .history-date-selector label { color: #a0aec0; font-size: 13px; }
+        .history-date-selector select, .history-date-selector input {
+            padding: 8px 12px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08); color: #fff; font-size: 13px;
+        }
+        .history-date-selector select:focus, .history-date-selector input:focus { outline: none; border-color: #63b3ed; }
+        /* Toast notification */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #38a169; color: #fff; padding: 14px 28px;
+            border-radius: 10px; font-size: 14px; font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: none; z-index: 1000; text-align: center;
+        }
+        .toast.error { background: #e53e3e; }
+        .toast.active { display: block; animation: slideUp 0.3s ease; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .spinner {
+            display: inline-block; width: 12px; height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-bar {
+            text-align: center; margin-bottom: 15px; padding: 8px;
+            border-radius: 8px; font-size: 12px;
+        }
+        .status-bar.connected { background: rgba(56,161,105,0.15); color: #68d391; border: 1px solid rgba(56,161,105,0.3); }
+        .status-bar.error { background: rgba(229,62,62,0.15); color: #fc8181; border: 1px solid rgba(229,62,62,0.3); }
+        .status-bar.loading { background: rgba(99,179,237,0.15); color: #63b3ed; border: 1px solid rgba(99,179,237,0.3); }
+        .no-data { text-align: center; color: #a0aec0; padding: 40px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Break Slot Tracker</h1>
+            <p>ROC-NA Intermodal | Shift: 04:00 AM &#8211; 01:00 PM</p>
+            <div class="shift-info">
+                <div class="shift-badge">Slots: <span>05:00 AM &#8211; 12:00 PM</span></div>
+                <div class="shift-badge">Duration: <span>15 min each</span></div>
+                <div class="shift-badge">Max/Slot: <span>4 associates</span></div>
+            </div>
+        </div>
+
+        <div class="reset-notice">
+            &#128338; Tracker resets daily at 04:30 AM. Data is saved to History automatically.
+        </div>
+
+        <div class="login-section" id="loginSection">
+            <label>Enter your Login ID to get started</label><br>
+            <input type="text" id="loginInput" placeholder="e.g. johndoe" onkeypress="if(event.key==='Enter')setLogin()">
+            <button onclick="setLogin()">Continue</button>
+        </div>
+        <div id="mainContent" class="hidden">
+            <div class="status-bar loading" id="statusBar">
+                <span class="spinner"></span> Connecting to SharePoint...
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('booking')">&#128197; Book a Slot</button>
+                <button class="tab-btn" onclick="switchTab('manager')">&#128202; Manager View</button>
+                <button class="tab-btn" onclick="switchTab('history')">&#128218; History</button>
+            </div>
+
+            <!-- TAB 1: Booking -->
+            <div class="tab-content active" id="tab-booking">
+                <div class="date-display" id="dateDisplay"></div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot available"></div> Available</div>
+                    <div class="legend-item"><div class="legend-dot booked"></div> Partially Booked</div>
+                    <div class="legend-item"><div class="legend-dot full"></div> Full (4/4)</div>
+                    <div class="legend-item"><div class="legend-dot yours"></div> Your Booking</div>
+                </div>
+                <div class="slots-grid" id="slotsGrid"></div>
+            </div>
+
+            <!-- TAB 2: Manager View -->
+            <div class="tab-content" id="tab-manager">
+                <div class="toolbar">
+                    <div class="toolbar-title">Today's Slot Overview</div>
+                    <button class="export-btn" onclick="exportToday()">&#128229; Export Today (CSV)</button>
+                </div>
+                <div class="manager-summary" id="managerSummary"></div>
+                <div class="slots-grid" id="managerGrid"></div>
+            </div>
+
+            <!-- TAB 3: History -->
+            <div class="tab-content" id="tab-history">
+                <div class="toolbar">
+                    <div class="toolbar-title">Booking History</div>
+                    <button class="export-btn" onclick="exportHistory()">&#128229; Export All History (CSV)</button>
+                </div>
+                <div class="history-date-selector">
+                    <label>Select Date:</label>
+                    <select id="historyDateSelect" onchange="renderHistory()"></select>
+                </div>
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr><th>#</th><th>Login ID</th><th>Slot</th><th>Booked At</th></tr>
+                        </thead>
+                        <tbody id="historyTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Break Tracker v2.2 | Auto-resets daily at 04:30 AM IST</p>
+            <p>Frozen: 04:00&#8211;05:00 AM &amp; 12:00&#8211;01:00 PM (business requirement)</p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script>
+        // ============ CONFIGURATION ============
+        var SHAREPOINT_SITE = "https://amazon.sharepoint.com/sites/HYD-Intermodal";
+        var LIST_NAME = "breakbookings";
+        var MAX_PER_SLOT = 4;
+
+        // ============ GENERATE SLOTS ============
+        var SLOTS = [];
+        (function() {
+            var hour = 5, min = 0;
+            while (hour < 12) {
+                var startH = hour, startM = min;
+                var endMin = min + 15, endH = hour;
+                if (endMin >= 60) { endMin = endMin - 60; endH = hour + 1; }
+                SLOTS.push({ id: "slot_" + startH + "_" + startM, label: formatTime(startH, startM) + " - " + formatTime(endH, endMin) });
+                min = min + 15;
+                if (min >= 60) { min = min - 60; hour = hour + 1; }
+            }
+        })();
+
+        function formatTime(h, m) {
+            var period = h >= 12 ? "PM" : "AM";
+            var displayH = h > 12 ? h - 12 : h;
+            if (displayH === 0) displayH = 12;
+            return displayH + ":" + (m < 10 ? "0" : "") + m + " " + period;
+        }
+
+        // ============ STATE ============
+        var currentUser = "";
+        var bookings = {}; // slotId -> [array of login IDs]
+        var bookingLog = []; // [{user, slotLabel, date, bookedAt}]
+        var spConnected = false;
+
+        // ============ DATE HELPERS ============
+        function getTodayKey() {
+            var now = new Date();
+            if (now.getHours() < 4 || (now.getHours() === 4 && now.getMinutes() < 30)) {
+                now.setDate(now.getDate() - 1);
+            }
+            return now.getFullYear() + "-" + (now.getMonth()+1 < 10 ? "0" : "") + (now.getMonth()+1) + "-" + (now.getDate() < 10 ? "0" : "") + now.getDate();
+        }
+        // ============ SHAREPOINT REST API ============
+        function getDigest() {
+            return fetch(SHAREPOINT_SITE + "/_api/contextinfo", {
+                method: "POST",
+                headers: { "Accept": "application/json;odata=verbose" },
+                credentials: "include"
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { return data.d.GetContextWebInformation.FormDigestValue; });
+        }
+
+        function loadBookingsFromSP() {
+            var dateKey = getTodayKey();
+            var filter = "$filter=BookingDate eq '" + dateKey + "'";
+            var url = SHAREPOINT_SITE + "/_api/web/lists/getbytitle('" + LIST_NAME + "')/items?" + filter + "&$top=500";
+
+            return fetch(url, {
+                method: "GET",
+                headers: { "Accept": "application/json;odata=verbose" },
+                credentials: "include"
+            })
+            .then(function(r) {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                bookings = {};
+                bookingLog = [];
+                var items = data.d.results;
+                for (var i = 0; i < items.length; i++) {
+                    var slot = items[i].Slot;
+                    var user = items[i].Title;
+                    var slotId = "";
+                    for (var j = 0; j < SLOTS.length; j++) {
+                        if (SLOTS[j].label === slot) { slotId = SLOTS[j].id; break; }
+                    }
+                    if (slotId) {
+                        if (!bookings[slotId]) bookings[slotId] = [];
+                        bookings[slotId].push(user);
+                    }
+                    bookingLog.push({
+                        user: user, slotLabel: slot,
+                        date: items[i].BookingDate || dateKey,
+                        bookedAt: items[i].BookedAt || "N/A"
+                    });
+                }
+                spConnected = true;
+                updateStatus("connected", "&#10003; Connected to SharePoint — showing live data");
+            })
+            .catch(function(err) {
+                spConnected = false;
+                updateStatus("error", "&#9888; Could not connect to SharePoint. Using local mode. (" + err.message + ")");
+                loadBookingsLocal();
+            });
+        }
+
+        function createListItem(title, slot, date) {
+            return getDigest().then(function(digest) {
+                var url = SHAREPOINT_SITE + "/_api/web/lists/getbytitle('" + LIST_NAME + "')/items";
+                var body = JSON.stringify({
+                    "__metadata": { "type": "SP.Data.BreakBookingsListItem" },
+                    "Title": title, "Slot": slot, "BookingDate": date,
+                    "BookedAt": new Date().toLocaleString("en-IN")
+                });
+                return fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json;odata=verbose",
+                        "Content-Type": "application/json;odata=verbose",
+                        "X-RequestDigest": digest
+                    },
+                    credentials: "include", body: body
+                });
+            }).then(function(r) {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.json();
+            });
+        }
+        // ============ LOCAL STORAGE ============
+        var memStore = {};
+        var useMemStore = false;
+        try { localStorage.setItem("_t_","_t_"); localStorage.removeItem("_t_"); }
+        catch(e) { useMemStore = true; }
+
+        function storageGet(k) {
+            if (useMemStore) return memStore[k] || null;
+            try { return localStorage.getItem(k); } catch(e) { return memStore[k] || null; }
+        }
+        function storageSet(k, v) {
+            if (useMemStore) { memStore[k] = v; return; }
+            try { localStorage.setItem(k, v); } catch(e) { memStore[k] = v; }
+        }
+
+        function loadBookingsLocal() {
+            var stored = storageGet("breakbookings_" + getTodayKey());
+            if (stored) { try { bookings = JSON.parse(stored); } catch(e) { bookings = {}; } }
+            else { bookings = {}; }
+            var storedLog = storageGet("breaklog_" + getTodayKey());
+            if (storedLog) { try { bookingLog = JSON.parse(storedLog); } catch(e) { bookingLog = []; } }
+            else { bookingLog = []; }
+        }
+
+        function saveBookingsLocal() {
+            var dateKey = getTodayKey();
+            storageSet("breakbookings_" + dateKey, JSON.stringify(bookings));
+            storageSet("breaklog_" + dateKey, JSON.stringify(bookingLog));
+            // Save this date to history index
+            saveToHistoryIndex(dateKey);
+        }
+
+        // ============ HISTORY PERSISTENCE ============
+        function getHistoryIndex() {
+            var raw = storageGet("breakhistory_index");
+            if (raw) { try { return JSON.parse(raw); } catch(e) { return []; } }
+            return [];
+        }
+
+        function saveToHistoryIndex(dateKey) {
+            var index = getHistoryIndex();
+            if (index.indexOf(dateKey) === -1) {
+                index.push(dateKey);
+                index.sort().reverse(); // newest first
+                storageSet("breakhistory_index", JSON.stringify(index));
+            }
+        }
+
+        function getHistoryForDate(dateKey) {
+            var raw = storageGet("breaklog_" + dateKey);
+            if (raw) { try { return JSON.parse(raw); } catch(e) { return []; } }
+            return [];
+        }
+
+        function getBookingsForDate(dateKey) {
+            var raw = storageGet("breakbookings_" + dateKey);
+            if (raw) { try { return JSON.parse(raw); } catch(e) { return {}; } }
+            return {};
+        }
+        // ============ UI HELPERS ============
+        function updateStatus(type, msg) {
+            var bar = document.getElementById("statusBar");
+            bar.className = "status-bar " + type;
+            bar.innerHTML = msg;
+        }
+
+        function showToast(msg, isError) {
+            var t = document.getElementById("toast");
+            t.textContent = msg;
+            t.className = "toast active" + (isError ? " error" : "");
+            setTimeout(function() { t.className = "toast"; }, 3500);
+        }
+
+        // ============ TAB SWITCHING ============
+        function switchTab(tabName) {
+            var tabs = document.querySelectorAll(".tab-content");
+            var btns = document.querySelectorAll(".tab-btn");
+            for (var i = 0; i < tabs.length; i++) { tabs[i].classList.remove("active"); }
+            for (var i = 0; i < btns.length; i++) { btns[i].classList.remove("active"); }
+            document.getElementById("tab-" + tabName).classList.add("active");
+            if (tabName === "booking") btns[0].classList.add("active");
+            else if (tabName === "manager") btns[1].classList.add("active");
+            else btns[2].classList.add("active");
+            if (tabName === "manager") renderManagerView();
+            if (tabName === "history") { populateHistoryDates(); renderHistory(); }
+        }
+
+        // ============ LOGIN ============
+        function setLogin() {
+            var val = document.getElementById("loginInput").value.trim().toLowerCase();
+            if (!val) { alert("Please enter your login ID"); return; }
+            currentUser = val;
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("mainContent").classList.remove("hidden");
+            loadBookingsFromSP().then(function() { renderSlots(); });
+        }
+        // ============ BOOKING TAB ============
+        function renderSlots() {
+            var today = new Date();
+            document.getElementById("dateDisplay").textContent =
+                today.toLocaleDateString("en-IN", {weekday:"long", year:"numeric", month:"long", day:"numeric"});
+
+            var grid = document.getElementById("slotsGrid");
+            grid.innerHTML = "";
+
+            for (var i = 0; i < SLOTS.length; i++) {
+                var slot = SLOTS[i];
+                var booked = bookings[slot.id] || [];
+                var count = booked.length;
+                var isFull = count >= MAX_PER_SLOT;
+                var isYours = false;
+                for (var x = 0; x < booked.length; x++) {
+                    if (booked[x] === currentUser) { isYours = true; break; }
+                }
+
+                var card = document.createElement("div");
+                card.className = "slot-card" + (isFull ? " full" : "") + (isYours ? " has-yours" : "");
+
+                var fillPercent = (count / MAX_PER_SLOT) * 100;
+                var fillClass = count >= 3 ? "high" : (count >= 2 ? "medium" : "low");
+
+                var bookedNamesHtml = "";
+                if (count > 0) {
+                    bookedNamesHtml = '<div class="booked-names">Booked: ';
+                    for (var j = 0; j < booked.length; j++) {
+                        if (booked[j] === currentUser) {
+                            bookedNamesHtml += '<span class="your-name">' + booked[j] + ' (you)</span>';
+                        } else { bookedNamesHtml += booked[j]; }
+                        if (j < booked.length - 1) bookedNamesHtml += ", ";
+                    }
+                    bookedNamesHtml += '</div>';
+                }
+
+                var actionHtml = "";
+                if (isYours) {
+                    actionHtml = '<div style="margin-top:8px;font-size:12px;color:#68d391;font-weight:600;">&#10003; Your break</div>';
+                } else if (!isFull) {
+                    actionHtml = '<button class="book-btn" data-slotid="' + slot.id + '" data-slotlabel="' + slot.label + '">Book This Slot</button>';
+                } else {
+                    actionHtml = '<div style="margin-top:8px;font-size:12px;color:#fc8181;font-weight:600;">Slot Full</div>';
+                }
+
+                card.innerHTML = ''
+                    + '<div class="slot-time">' + slot.label + '</div>'
+                    + '<div class="slot-capacity">' + count + ' / ' + MAX_PER_SLOT + ' booked</div>'
+                    + '<div class="capacity-bar"><div class="capacity-fill ' + fillClass + '" style="width:' + fillPercent + '%"></div></div>'
+                    + bookedNamesHtml + actionHtml;
+
+                grid.appendChild(card);
+            }
+        }
+        // ============ MANAGER VIEW (slot-card style) ============
+        function renderManagerView() {
+            var summaryDiv = document.getElementById("managerSummary");
+            var grid = document.getElementById("managerGrid");
+            grid.innerHTML = "";
+
+            var totalBooked = 0;
+            var uniqueUsers = {};
+            for (var key in bookings) {
+                if (bookings.hasOwnProperty(key)) {
+                    totalBooked += bookings[key].length;
+                    for (var i = 0; i < bookings[key].length; i++) { uniqueUsers[bookings[key][i]] = true; }
+                }
+            }
+            var slotsUsed = Object.keys(bookings).filter(function(k) { return bookings[k].length > 0; }).length;
+
+            summaryDiv.innerHTML = ''
+                + '<div class="summary-card"><div class="num">' + totalBooked + '</div><div class="lbl">Total Bookings</div></div>'
+                + '<div class="summary-card"><div class="num">' + Object.keys(uniqueUsers).length + '</div><div class="lbl">Unique Associates</div></div>'
+                + '<div class="summary-card"><div class="num">' + slotsUsed + '/' + SLOTS.length + '</div><div class="lbl">Slots Used</div></div>'
+                + '<div class="summary-card"><div class="num">' + (SLOTS.length * MAX_PER_SLOT - totalBooked) + '</div><div class="lbl">Remaining Capacity</div></div>';
+
+            // Render each slot as a card (same look as booking page, but read-only)
+            for (var i = 0; i < SLOTS.length; i++) {
+                var slot = SLOTS[i];
+                var booked = bookings[slot.id] || [];
+                var count = booked.length;
+                var isFull = count >= MAX_PER_SLOT;
+
+                var card = document.createElement("div");
+                card.className = "slot-card mgr-card" + (isFull ? " full" : (count > 0 ? " has-yours" : ""));
+
+                var fillPercent = (count / MAX_PER_SLOT) * 100;
+                var fillClass = count >= 3 ? "high" : (count >= 2 ? "medium" : "low");
+
+                var namesHtml = "";
+                if (count > 0) {
+                    namesHtml = '<div class="booked-names" style="margin-top:8px;">';
+                    for (var j = 0; j < booked.length; j++) {
+                        namesHtml += '<div style="padding:2px 0;">&#8226; ' + booked[j] + '</div>';
+                    }
+                    namesHtml += '</div>';
+                } else {
+                    namesHtml = '<div style="margin-top:8px;font-size:12px;color:#4a5568;">No bookings</div>';
+                }
+
+                card.innerHTML = ''
+                    + '<div class="slot-time">' + slot.label + '</div>'
+                    + '<div class="slot-capacity">' + count + ' / ' + MAX_PER_SLOT + ' booked</div>'
+                    + '<div class="capacity-bar"><div class="capacity-fill ' + fillClass + '" style="width:' + fillPercent + '%"></div></div>'
+                    + namesHtml;
+
+                grid.appendChild(card);
+            }
+        }
+        // ============ HISTORY TAB ============
+        function populateHistoryDates() {
+            var select = document.getElementById("historyDateSelect");
+            var index = getHistoryIndex();
+            // Always include today
+            var today = getTodayKey();
+            if (index.indexOf(today) === -1) index.unshift(today);
+            select.innerHTML = "";
+            for (var i = 0; i < index.length; i++) {
+                var opt = document.createElement("option");
+                opt.value = index[i];
+                opt.textContent = index[i] + (index[i] === today ? " (Today)" : "");
+                select.appendChild(opt);
+            }
+        }
+
+        function renderHistory() {
+            var select = document.getElementById("historyDateSelect");
+            var dateKey = select.value || getTodayKey();
+            var log = getHistoryForDate(dateKey);
+            var tbody = document.getElementById("historyTableBody");
+            tbody.innerHTML = "";
+
+            if (log.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="no-data">No bookings recorded for this date.</td></tr>';
+                return;
+            }
+
+            for (var i = 0; i < log.length; i++) {
+                var entry = log[i];
+                var row = document.createElement("tr");
+                row.innerHTML = '<td>' + (i + 1) + '</td>'
+                    + '<td>' + entry.user + '</td>'
+                    + '<td>' + entry.slotLabel + '</td>'
+                    + '<td>' + entry.bookedAt + '</td>';
+                tbody.appendChild(row);
+            }
+        }
+
+        // ============ EXPORT ============
+        function exportToday() {
+            var dateKey = getTodayKey();
+            var rows = [["#", "Login ID", "Slot", "Date", "Booked At"]];
+            var log = bookingLog.length > 0 ? bookingLog : getHistoryForDate(dateKey);
+            for (var i = 0; i < log.length; i++) {
+                rows.push([(i+1), log[i].user, log[i].slotLabel, dateKey, log[i].bookedAt]);
+            }
+            downloadCSV(rows, "break_bookings_" + dateKey + ".csv");
+        }
+
+        function exportHistory() {
+            var index = getHistoryIndex();
+            var rows = [["#", "Login ID", "Slot", "Date", "Booked At"]];
+            var counter = 1;
+            for (var d = 0; d < index.length; d++) {
+                var log = getHistoryForDate(index[d]);
+                for (var i = 0; i < log.length; i++) {
+                    rows.push([counter++, log[i].user, log[i].slotLabel, index[d], log[i].bookedAt]);
+                }
+            }
+            if (rows.length === 1) { showToast("No history data to export.", true); return; }
+            downloadCSV(rows, "break_bookings_all_history.csv");
+        }
+
+        function downloadCSV(rows, filename) {
+            var csv = rows.map(function(r) {
+                return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(",");
+            }).join("\n");
+            var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            var link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            showToast("Exported: " + filename);
+        }
+        // ============ BOOKING LOGIC ============
+        document.addEventListener("click", function(e) {
+            var target = e.target;
+            if (target.className && target.className.indexOf("book-btn") !== -1) {
+                var slotId = target.getAttribute("data-slotid");
+                var slotLabel = target.getAttribute("data-slotlabel");
+                if (slotId && slotLabel) bookSlot(slotId, slotLabel, target);
+            }
+        });
+
+        function bookSlot(slotId, slotLabel, btnElem) {
+            if (!bookings[slotId]) bookings[slotId] = [];
+            if (bookings[slotId].length >= MAX_PER_SLOT) {
+                showToast("This slot is full!", true); return;
+            }
+            for (var i = 0; i < bookings[slotId].length; i++) {
+                if (bookings[slotId][i] === currentUser) {
+                    showToast("You already booked this slot.", true); return;
+                }
+            }
+
+            btnElem.disabled = true;
+            btnElem.innerHTML = '<span class="spinner"></span>Booking...';
+
+            var dateKey = getTodayKey();
+            var bookedAt = new Date().toLocaleString("en-IN");
+
+            createListItem(currentUser, slotLabel, dateKey)
+                .then(function() { completeBooking(slotId, slotLabel, dateKey, bookedAt, false); })
+                .catch(function() { completeBooking(slotId, slotLabel, dateKey, bookedAt, true); });
+        }
+
+        function completeBooking(slotId, slotLabel, dateKey, bookedAt, spFailed) {
+            if (!bookings[slotId]) bookings[slotId] = [];
+            bookings[slotId].push(currentUser);
+            bookingLog.push({
+                user: currentUser, slotLabel: slotLabel,
+                date: dateKey, bookedAt: bookedAt
+            });
+            saveBookingsLocal();
+            if (spFailed) {
+                showToast("Booked locally (SharePoint sync pending)", false);
+            } else {
+                showToast("\u2713 Break booked: " + slotLabel, false);
+            }
+            renderSlots();
+        }
+    </script>
+</body>
+</html>
