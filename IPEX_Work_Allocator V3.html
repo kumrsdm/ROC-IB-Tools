@@ -1179,18 +1179,14 @@ document.getElementById('allocDate').value='2026-06-07';goToStep(2);
 }
 
 
-// ===== GITHUB SYNC CONFIGURATION =====
-var GITHUB_TOKEN = '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';
-var GITHUB_REPO = 'kumrsdm/ROC-IB-Tools';
-var GITHUB_FILE = 'data/history.json';
-var GITHUB_BRANCH = 'main';
-var GITHUB_API = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + GITHUB_FILE;
-var GITHUB_RAW = 'https://raw.githubusercontent.com/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/' + GITHUB_FILE;
+// ===== GITHUB SYNC VIA GOOGLE APPS SCRIPT PROXY =====
+// Token is stored safely in Google Apps Script - NOT in this HTML file
+var SYNC_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwIpjpsGs4HRBCJD12nCSUQvtE5MvVeYyN-rmaV-7yjdUNtSzyYBIU0bj5_PKFM3oxZBA/exec';  // <-- Replace with your deployed Apps Script URL
 
-// Load history from GitHub on page load
+// Load history from GitHub (via proxy) on page load
 function loadFromGitHub() {
-    fetch(GITHUB_RAW + '?t=' + Date.now())
-    .then(function(r) { if (r.ok) return r.json(); throw new Error('not found'); })
+    fetch(SYNC_PROXY_URL)
+    .then(function(r) { if (r.ok) return r.json(); throw new Error('Load failed'); })
     .then(function(data) {
         if (Array.isArray(data) && data.length > 0) {
             var existing = getHistory();
@@ -1201,7 +1197,6 @@ function loadFromGitHub() {
             merged.sort(function(a, b) { return b.date.localeCompare(a.date) || b.shift.localeCompare(a.shift); });
             saveHistoryData(merged);
             console.log('[GitHub Sync] Loaded ' + data.length + ' records from GitHub');
-            // Refresh history view if visible
             if (document.getElementById('tabBtnHist').classList.contains('active')) {
                 renderHistory();
             }
@@ -1210,37 +1205,20 @@ function loadFromGitHub() {
     .catch(function(err) { console.log('[GitHub Sync] Load failed:', err.message); });
 }
 
-// Save history to GitHub
+// Save history to GitHub (via proxy)
 function saveToGitHub(historyData) {
-    // First get the current file SHA (required for updates)
-    fetch(GITHUB_API, {
-        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+    fetch(SYNC_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(historyData)
     })
     .then(function(r) { return r.json(); })
-    .then(function(fileInfo) {
-        var sha = fileInfo.sha;
-        var content = btoa(unescape(encodeURIComponent(JSON.stringify(historyData, null, 2))));
-        return fetch(GITHUB_API, {
-            method: 'PUT',
-            headers: {
-                'Authorization': 'token ' + GITHUB_TOKEN,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: 'Update allocation history - ' + new Date().toISOString().slice(0, 10),
-                content: content,
-                sha: sha,
-                branch: GITHUB_BRANCH
-            })
-        });
-    })
-    .then(function(r) {
-        if (r.ok) {
+    .then(function(result) {
+        if (result.success) {
             console.log('[GitHub Sync] Saved to GitHub successfully');
             showSyncStatus('✅ Synced to cloud', 'success');
         } else {
-            r.json().then(function(err) { console.error('[GitHub Sync] Save failed:', err.message); });
+            console.error('[GitHub Sync] Save failed:', result.error);
             showSyncStatus('⚠️ Sync failed - saved locally', 'warning');
         }
     })
@@ -1261,7 +1239,7 @@ function showSyncStatus(msg, type) {
 
 // ===== AUTO-LOAD HISTORY FROM GITHUB ON START =====
 loadFromGitHub();
-// Also refresh every 2 minutes to catch other users' changes
+// Refresh every 2 minutes to catch other users' changes
 setInterval(loadFromGitHub, 120000);
 </script>
 
