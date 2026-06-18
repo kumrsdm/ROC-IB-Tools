@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html><head><style id="qw-theme">:root {
+  --color-bg: #faf9fc;
+  --color-text: #131920;
+  --color-navbar-bg: #f9f9fb;
+  --color-bg-chat-view: #fcfcfd;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f9fafb;
+  --color-bg-hover: #f3f4f6;
+  --color-surface: #f9fafb;
+  --color-surface-hover: #f3f4f6;
+  --color-surface-active: #e5e7eb;
+  --color-border: rgba(0, 0, 0, .12);
+  --color-border-light: rgba(0, 0, 0, .06);
+  --color-border-strong: #d1d5db;
+  --color-primary: #4200db;
+  --color-primary-dark: #35009e;
+  --color-primary-light: #8575ff;
+  --color-primary-bg: #e8e6ff;
+  --color-primary-hover-border: #35009e;
+  --color-nav-icon-active: #4200db;
+  --color-nav-hover-border: #4200db;
+  --color-primary-alpha-3: color-mix(in srgb, #4200db 3%, transparent);
+  --color-primary-alpha-5: color-mix(in srgb, #4200db 5%, transparent);
+  --color-primary-alpha-8: color-mix(in srgb, #4200db 8%, transparent);
+  --color-primary-alpha-12: color-mix(in srgb, #4200db 12%, transparent);
+  --color-primary-alpha-15: color-mix(in srgb, #4200db 15%, transparent);
+  --color-primary-alpha-20: color-mix(in srgb, #4200db 20%, transparent);
+  --color-primary-alpha-25: color-mix(in srgb, #4200db 25%, transparent);
+  --color-primary-alpha-30: color-mix(in srgb, #4200db 30%, transparent);
+  --color-primary-alpha-40: color-mix(in srgb, #4200db 40%, transparent);
+  --color-primary-alpha-50: color-mix(in srgb, #4200db 50%, transparent);
+  --color-primary-alpha-60: color-mix(in srgb, #4200db 60%, transparent);
+  --color-primary-subtle: color-mix(in srgb, #4200db 12%, transparent);
+  --color-primary-border: color-mix(in srgb, #4200db 30%, transparent);
+  --color-focus-ring: color-mix(in srgb, #4200db 50%, transparent);
+  --color-sidebar-hover: color-mix(in srgb, #4200db 12%, transparent);
+  --color-accent: #4200db;
+  --color-accent-foreground: #4200db;
+  --color-accent-dark: #35009e;
+  --color-accent-light: #e8e6ff;
+  --color-accent-inverse: #ffffff;
+  --color-link: #4200db;
+  --color-primary-gradient-end: #e8e6ff;
+  --color-primary-bg-solid: #e8e6ff;
+  --color-user-bubble: #F3F3F7;
+  --color-user-bubble-text: #131920;
+  --color-text-secondary: #5e5e5e;
+  --color-text-tertiary: #656871;
+  --color-text-muted: #9ca3af;
+  --color-text-on-primary: #ffffff;
+  --color-success: #00802f;
+  --color-success-dark: #00471e;
+  --color-success-light: #d9ffd6;
+  --color-success-hover: #005c26;
+  --color-success-bg: #e6f5eb;
+  --color-success-border: #b3d9bf;
+  --color-success-foreground: #00802f;
+  --color-success-dark-foreground: #00471e;
+  --color-success-text: #00471e;
+  --color-error: #db0000;
+  --color-error-dark: #700000;
+  --color-error-light: #ffe0e0;
+  --color-error-hover: #ffe0e0;
+  --color-error-bg: #fceaea;
+  --color-error-border: #f2cccc;
+  --color-error-active-border: #db0000;
+  --color-error-foreground: #db0000;
+  --color-error-dark-foreground: #700000;
+  --color-error-inverse: #ffffff;
+  --color-error-text: #700000;
+  --color-warning: #f2b100;
+  --color-warning-dark: #573a00;
+  --color-warning-light: #fffbbd;
+  --color-warning-hover: #db9200;
+  --color-warning-bg: #fef7e6;
+  --color-warning-border: #f9dfa3;
+  --color-warning-foreground: #f2b100;
+  --color-warning-dark-foreground: #573a00;
+  --color-warning-inverse: #573a00;
+  --color-surface-warning: #fffbbd;
+  --color-text-warning: #573a00;
+  --color-info: #006ce0;
+  --color-info-dark: #002a66;
+  --color-info-light: #d1f1ff;
+  --color-info-hover: #003b8f;
+  --color-info-bg: #ebf3fc;
+  --color-info-border: #b3d1f0;
+  --color-info-foreground: #006ce0;
+  --color-info-dark-foreground: #002a66;
+  --color-info-inverse: #ffffff;
+  --color-overlay: rgba(0, 0, 0, .5);
+  --color-shadow: rgba(0, 0, 0, .08);
+  --color-hover: rgba(0, 0, 0, .05);
+  --color-tooltip-bg: rgba(0, 0, 0, .85);
+  --color-tooltip-text: #ffffff;
+  --color-voice-purple: #8575ff;
+  --color-voice-purple-dark: #4200db;
+  --color-voice-purple-light: #8575ff;
+  --color-voice-red: #db0000;
+  --color-voice-red-dark: #700000;
+  --color-voice-amber: #f2b100;
+  --color-voice-purple-glow: rgba(66, 0, 219, .4);
+  --color-voice-red-glow: rgba(219, 0, 0, .4);
+  --font-sans: "Amazon Ember", "Helvetica Neue", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
+  --text-2xs: .5625rem;
+  --text-xs: .625rem;
+  --text-sm: .6875rem;
+  --text-base: .75rem;
+  --text-md: .8125rem;
+  --text-lg: .875rem;
+  --text-xl: 1rem;
+  --text-2xl: 1.125rem;
+  --text-3xl: 1.25rem;
+  --text-4xl: 1.5rem;
+  --text-5xl: 2rem;
+  --spacing-1: calc(.25rem * 1);
+  --spacing-1-5: calc(.25rem * 1.5);
+  --spacing-2: calc(.25rem * 2);
+  --spacing-3: calc(.25rem * 3);
+  --spacing-4: calc(.25rem * 4);
+  --spacing-5: calc(.25rem * 5);
+  --spacing-6: calc(.25rem * 6);
+  --spacing-7: calc(.25rem * 7);
+  --spacing-8: calc(.25rem * 8);
+  --spacing-9: calc(.25rem * 9);
+  --spacing-10: calc(.25rem * 10);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-card: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 8px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, .08);
+  --color-success-bg-solid: #d9ffd6;
+  --color-error-bg-solid: #ffe0e0;
+  --color-error-border-solid: #ffe0e0;
+  --color-warning-bg-solid: #fffbbd;
+  --color-warning-text: #573a00;
+  --color-info-bg-solid: #d1f1ff;
+  --color-info-bg-solid-alt: #d1f1ff;
+  --color-info-text: #002a66;
+  --color-info-text-alt: #002a66;
+  --color-emerald: #10b981;
+  --color-teal: #4ecdc4;
+  --color-code-bg: #F3F3F7;
+  --color-code-header-bg: #f1f3f5;
+  --color-code-text: #24292e;
+  --color-code-border: #e1e4e8;
+  --color-code-muted: #6a737d;
+  --color-inline-code-bg: #F3F3F7;
+  --color-inline-code-text: #24292e;
+  --color-inline-code-border: #e1e4e8;
+  --color-scrollbar-thumb: #d1d5db;
+  --color-scrollbar-track: transparent;
+  --color-graph-node-text: #333333;
+  --color-graph-node-text-dim: #7F8C8D;
+  --color-graph-edge-default: #95A5A6;
+  --color-graph-edge-cross: #E67E22;
+  --color-graph-edge-text: #666666;
+  --color-graph-edge-stroke: #ffffff;
+  --color-graph-highlight-bg: #FF6B6B;
+  --color-graph-highlight-border: #E74C3C;
+  --color-graph-search-bg: #FFD700;
+  --color-graph-search-border: #FFA500;
+  --color-graph-focus-border: #C0392B;
+  --color-graph-external-border: #95A5A6;
+  --color-graph-cat-file: #3498DB;
+  --color-graph-cat-folder: #7F8C8D;
+  --color-graph-cat-file-aggregate: #2980B9;
+  --color-graph-cat-class: #9B59B6;
+  --color-graph-cat-function: #2ECC71;
+  --color-graph-cat-method: #1ABC9C;
+  --color-graph-cat-variable: #F39C12;
+  --color-graph-cat-import: #D35400;
+  --color-graph-cat-module: #5B6ABF;
+  --color-graph-cat-concept: #E74C3C;
+  --color-graph-cat-person: #FF6B6B;
+  --color-graph-cat-org: #4ECDC4;
+  --color-graph-cat-organization: #4ECDC4;
+  --color-graph-cat-product: #A29BFE;
+  --color-graph-cat-metric: #FD79A8;
+  --color-graph-cat-location: #34495E;
+  --color-graph-cat-date: #E056A0;
+  --color-graph-cat-code: #3498DB;
+  --color-graph-cat-doc: #7F8C8D;
+  --color-graph-cat-url: #00B894;
+  --color-graph-cat-email: #6C5CE7;
+  --color-graph-cat-unknown: #BDC3C7;
+  --color-graph-rel-contains: #BDC3C7;
+  --color-graph-rel-extends: #9B59B6;
+  --color-graph-rel-implements: #3498DB;
+  --color-graph-rel-imports: #E67E22;
+  --color-graph-rel-uses: #2ECC71;
+  --color-graph-rel-calls: #27AE60;
+  --color-graph-rel-references: #F39C12;
+  --color-graph-rel-related-to: #95A5A6;
+  --color-graph-rel-works-on: #E74C3C;
+  --color-graph-rel-owns: #1ABC9C;
+  --color-graph-rel-depends-on: #E67E22;
+  --color-graph-rel-parent-of: #BDC3C7;
+  --qs-content: #fff;
+  --qs-main: #fff;
+  --qs-primary-foreground: #131920;
+  --qs-secondary-foreground: #656871;
+  --qs-tertiary-foreground: #9ca3af;
+  --qs-placeholder-foreground: #8c8c94;
+  --qs-divider: #dedee3;
+  --qs-default-border: #8c8c94;
+  --qs-neutral-soft: #b4b4bb;
+  --qs-neutral-gray-50: #f9fafb;
+  --qs-tertiary-background: #f9fafb;
+  --qs-action-hover: #f3f3f7;
+  --qs-primary-default: #4200db;
+  --qs-primary-dark: #35009e;
+  --qs-primary-light: #e8e6ff;
+  --qs-success-default: #00802f;
+  --qs-error-default: #db0000;
+  --qs-font-sans: "Amazon Ember", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+  --qs-font-family: "Amazon Ember", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+  --qs-font-base-letter-spacing: .15px;
+  --qs-shadow-sm: 0 0 2px 0 #00000029, 0 0 4px 0 #00000029;
+  --qs-shadow-md: 0 0 2px 0 #00000029, 0 2px 8px 1px #00000029;
+  --qs-shadow-lg: 0 4px 16px 4px #00000029, 0 2px 6px 1px #00000029;
+  --qs-shadow-xl: 0 4px 8px 2px #00000029, 0 6px 20px 4px #00000029;
+  --qs-width-modal-sm: 384px;
+  --qs-width-modal-md: 600px;
+  --qs-width-modal-lg: 1136px;
+  --qs-grid-gap: 16px;
+  --qs-grid-gap-xl: 24px;
+  --qs-primary-medium: #8575ff;
+  --qs-primary-inverse: #fff;
+  --qs-neutral-lightest: #f9f9fb;
+  --qs-neutral-light: #f3f3f7;
+  --qs-neutral-default: #dedee3;
+  --qs-neutral-medium: #8c8c94;
+  --qs-neutral-deep: #656871;
+  --qs-neutral-dark: #333843;
+  --qs-neutral-strong: #131920;
+  --qs-neutral-white: #fff;
+  --qs-neutral-black: #000;
+  --qs-success-medium: #005c26;
+  --qs-success-dark: #00471e;
+  --qs-success-light: #d9ffd6;
+  --qs-success-inverse: #fff;
+  --qs-info-default: #006ce0;
+  --qs-info-medium: #003b8f;
+  --qs-info-dark: #002a66;
+  --qs-info-light: #d1f1ff;
+  --qs-info-inverse: #fff;
+  --qs-warning-default: #f2b100;
+  --qs-warning-medium: #db9200;
+  --qs-warning-dark: #573a00;
+  --qs-warning-light: #fffbbd;
+  --qs-warning-inverse: #573a00;
+  --qs-warning-experimental: #f2b100;
+  --qs-warning-experimental-light: #fffbbd;
+  --qs-warning-experimental-light-foreground: #fffbbd;
+  --qs-error-medium: #900;
+  --qs-error-dark: #700000;
+  --qs-error-light: #ffe0e0;
+  --qs-error-inverse: #fff;
+  --qs-connection-default: #db3300;
+  --qs-connection-soft: #ff997a;
+  --qs-connection-light: #ffe0d6;
+  --qs-connection-dark: #661800;
+  --qs-automation-default: #b3008f;
+  --qs-automation-medium: #d600ba;
+  --qs-automation-soft: #ff94f1;
+  --qs-automation-light: #ffe0fb;
+  --qs-automation-dark: #660052;
+  --qs-insight-default: #a000b8;
+  --qs-insight-soft: #f299ff;
+  --qs-insight-light: #fce6ff;
+  --qs-insight-dark: #590066;
+  --qs-visualization-default: #7300e5;
+  --qs-visualization-soft: #d4a8ff;
+  --qs-visualization-light: #f2e5ff;
+  --qs-visualization-dark: #45008a;
+  --qs-spice: #ff9800;
+  --qs-coachmark: #006ce0;
+  --qs-brand: #fff;
+  --qs-brand-foreground: #131920;
+  --qs-brand-navbar: #131920;
+  --qs-brand-navbar-foreground: #fff;
+  --qs-brand-navbar-light: #dedee3;
+  --qs-brand-navbar-dark: #000;
+  --qs-application-navbar: #4200db;
+  --qs-application-navbar-foreground: #fff;
+  --qs-application-navbar-light: #e8e6ff;
+  --qs-application-navbar-dark: #35009e;
+  --qs-dimension: #4200db;
+  --qs-dimension-foreground: #fff;
+  --qs-dimension-experimental: #4200db;
+  --qs-dimension-experimental-foreground: #4200db;
+  --qs-measure: #00802f;
+  --qs-measure-foreground: #fff;
+  --qs-measure-experimental: #f2b100;
+  --qs-measure-experimental-foreground: #f2b100;
+  --qs-content-inverse: #333843;
+  --qs-content-inverse-active: #131920;
+  --qs-secondary: #dedee3;
+  --qs-disabled: #8c8c94;
+  --qs-divider-light: #f3f3f7;
+  --qs-hover-border: #333843;
+  --qs-active-border: #4200db;
+  --qs-disabled-border: #dedee3;
+  --qs-error-border: #ffe0e0;
+  --qs-error-active-border: #db0000;
+  --qs-disabled-foreground: #b4b4bb;
+  --qs-primary-inverse-foreground: #fff;
+  --qs-error-foreground: #db0000;
+  --qs-contrast-foreground: #131920;
+  --qs-main-foreground: #131920;
+  --qs-main-secondary-foreground: #656871;
+  --qs-action-disabled: #f3f3f7;
+  --qs-action-active: #e8e6ff;
+  --qs-default-badge: #dedee3;
+  --qs-tag-default: #dedee3;
+  --qs-tag-soft-border: #b4b4bb;
+  --qs-focus-offset: 1px;
+  --qs-toggle-tile-sm: calc(.25rem * 8);
+  --qs-toggle-tile-md: calc(.25rem * 12);
+  --qs-toggle-tile-lg: calc(.25rem * 15);
+  --qs-shadow-pin-right: inset 4px 0 4px -4px #00000029;
+  --qs-shadow-pin-left: inset -4px 0 4px -4px #00000029;
+  --react-pdf-text-layer: 1;
+  --highlight-bg-color: rgba(180, 0, 170, 1);
+  --highlight-selected-bg-color: rgba(0, 100, 0, 1);
+  --react-pdf-annotation-layer: 1;
+  --annotation-unfocused-field-background: url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+  --input-focus-border-color: Highlight;
+  --input-focus-outline: 1px solid Canvas;
+  --input-unfocused-border-color: transparent;
+  --input-disabled-border-color: transparent;
+  --input-hover-border-color: black;
+  --link-outline: none;
+  color-scheme: light;
+}
+body { background: var(--color-bg); color: var(--color-text); }
+a { color: var(--color-link, var(--color-primary)); }</style>
+<meta charset="UTF-8">
+<title>PO Redirect Path Validator</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --color-bg: #f8f9fa;
+  --color-bg-secondary: #ffffff;
+  --color-text: #1a1a2e;
+  --color-text-secondary: #44546f;
+  --color-text-muted: #8993a4;
+  --color-border-light: #e8eaed;
+  --color-border: #dfe1e6;
+  --color-surface: #ffffff;
+  --color-primary: #0052CC;
+  --color-primary-light: #e6f0ff;
+  --color-success: #36b37e;
+  --color-success-bg: #e3fcef;
+  --color-error: #de350b;
+  --color-error-bg: #ffebe6;
+  --color-warning: #ff991f;
+  --color-warning-bg: #fffae6;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', Consolas, 'Courier New', monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--color-bg); font-family: var(--font-sans); color: var(--color-text); padding: 24px; min-height: 100vh; }
+
+h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { color: var(--color-text-secondary); font-size: 14px; margin-bottom: 24px; }
+
+/* Top-level nav tabs (file upload) */
+.nav-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--color-border-light); margin-bottom: 24px; }
+.nav-tab { padding: 10px 20px; font-size: 14px; font-weight: 500; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s ease; display: flex; align-items: center; gap: 8px; }
+.nav-tab:hover { color: var(--color-text-secondary); }
+.nav-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.nav-tab .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); }
+.nav-tab .status-dot.loaded { background: var(--color-success); }
+
+/* Tab content */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Drop zones */
+.drop-zone { border: 2px dashed var(--color-border); border-radius: var(--radius-lg); padding: 40px 24px; text-align: center; transition: all 0.2s ease; cursor: pointer; background: var(--color-bg-secondary); }
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--color-primary); background: var(--color-primary-light); }
+.drop-zone i.upload-icon { font-size: 32px; color: var(--color-text-muted); margin-bottom: 12px; display: block; }
+.drop-zone p { color: var(--color-text-secondary); font-size: 14px; margin-bottom: 4px; }
+.drop-zone .hint { color: var(--color-text-muted); font-size: 12px; }
+.drop-zone.loaded { border-color: var(--color-success); border-style: solid; background: var(--color-success-bg); }
+.drop-zone.loaded i.upload-icon { color: var(--color-success); }
+
+.file-info { margin-top: 12px; padding: 10px 14px; background: var(--color-bg); border-radius: var(--radius-sm); font-size: 12px; color: var(--color-text-secondary); }
+.file-info strong { color: var(--color-text); }
+
+/* Sheet selector */
+.sheet-selector { margin-top: 12px; }
+.sheet-selector label { font-size: 12px; color: var(--color-text-muted); display: block; margin-bottom: 4px; }
+.sheet-selector select { padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: white; color: var(--color-text); min-width: 240px; }
+
+/* Validation section */
+.validation-section { margin-top: 32px; border-top: 1px solid var(--color-border-light); padding-top: 24px; }
+.validation-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.val-tab { padding: 10px 20px; font-size: 14px; font-weight: 600; border-radius: var(--radius-md); cursor: pointer; border: 2px solid var(--color-border-light); background: var(--color-bg-secondary); color: var(--color-text-secondary); transition: all 0.15s ease; }
+.val-tab:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.val-tab.active { border-color: var(--color-primary); background: var(--color-primary-light); color: var(--color-primary); }
+.val-tab .badge { display: inline-block; background: var(--color-border-light); color: var(--color-text-muted); font-size: 11px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; font-weight: 500; }
+.val-tab.active .badge { background: var(--color-primary); color: white; }
+
+.val-panel { display: none; }
+.val-panel.active { display: block; }
+
+/* Buttons */
+.btn-row { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+.btn-validate { background: var(--color-primary); color: white; border: none; padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s ease; }
+.btn-validate:hover { background: #003d99; }
+.btn-validate:disabled { background: var(--color-border); cursor: not-allowed; }
+.btn-validate.green { background: var(--color-success); }
+.btn-validate.green:hover { background: #2a9d6a; }
+.btn-export { background: var(--color-bg-secondary); border: 1px solid var(--color-border); padding: 8px 16px; font-size: 13px; border-radius: var(--radius-sm); cursor: pointer; color: var(--color-text-secondary); transition: all 0.15s ease; }
+.btn-export:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+/* Results */
+.results-summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.summary-card { background: var(--color-bg-secondary); border: 1px solid var(--color-border-light); border-radius: var(--radius-md); padding: 10px 14px; min-width: 120px; }
+.summary-card .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted); margin-bottom: 2px; }
+.summary-card .value { font-size: 20px; font-weight: 700; font-family: var(--font-mono); }
+.summary-card .value.green { color: var(--color-success); }
+.summary-card .value.red { color: var(--color-error); }
+.summary-card .value.orange { color: var(--color-warning); }
+
+/* Table */
+.results-table-wrapper { max-height: 450px; overflow-y: auto; border: 1px solid var(--color-border-light); border-radius: var(--radius-md); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { position: sticky; top: 0; background: var(--color-bg); text-align: left; color: var(--color-text-muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--color-border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; z-index: 1; }
+td { padding: 6px 10px; color: var(--color-text); border-bottom: 1px solid var(--color-border-light); font-family: var(--font-mono); font-size: 11px; }
+tr:hover td { background: var(--color-primary-light); }
+.cell-addr { font-weight: 700; color: var(--color-primary); }
+.issue-reject { color: var(--color-error); font-family: var(--font-sans); font-weight: 500; }
+.issue-approve { color: var(--color-success); font-family: var(--font-sans); font-weight: 500; }
+
+.no-issues { text-align: center; padding: 40px; color: var(--color-success); }
+.no-issues i { font-size: 40px; margin-bottom: 10px; display: block; }
+.no-issues p { font-size: 15px; font-weight: 500; }
+
+/* Filter */
+.filter-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.filter-row label { font-size: 11px; color: var(--color-text-muted); font-weight: 500; }
+.filter-row select { padding: 5px 8px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12px; }
+
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--color-border-light); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status-msg { font-size: 12px; color: var(--color-text-muted); margin-left: 12px; }
+
+/* Watermark */
+.watermark { text-align: center; margin-top: 48px; padding: 16px 0; border-top: 1px solid var(--color-border-light); font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+
+<h1><i class="fa-solid fa-route"></i> PO Redirect Path Validator</h1>
+<p class="subtitle">Upload 3 files → Validate General Paths (Step 4e) and APP Paths (Step 4f) separately. Shows cell addresses of mismatches.</p>
+
+<!-- FILE UPLOAD TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" data-tab="template">
+    <i class="fa-solid fa-file-excel"></i> PM Template
+    <span class="status-dot" id="dot-template"></span>
+  </div>
+  <div class="nav-tab" data-tab="paths">
+    <i class="fa-solid fa-route"></i> Approved Paths
+    <span class="status-dot" id="dot-paths"></span>
+  </div>
+  <div class="nav-tab" data-tab="app">
+    <i class="fa-solid fa-plane"></i> APP Pilot Lanes
+    <span class="status-dot" id="dot-app"></span>
+  </div>
+</div>
+
+<!-- TEMPLATE TAB -->
+<div class="tab-panel active" id="panel-template">
+  <div class="drop-zone" id="drop-template">
+    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+    <p>Drop the <strong>PM Batch Template</strong> file here</p>
+    <p class="hint">File with "Check" sheet (e.g., PO_RedirectTemplate_06.17 PM.xlsx)</p>
+  </div>
+  <div class="file-info" id="info-template" style="display:none;"></div>
+</div>
+
+<!-- APPROVED PATHS TAB -->
+<div class="tab-panel" id="panel-paths">
+  <div class="drop-zone" id="drop-paths">
+    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+    <p>Drop the <strong>PO Redirect Approved Paths</strong> file here</p>
+    <p class="hint">Sheet starting with "Active" will be auto-selected</p>
+  </div>
+  <div class="file-info" id="info-paths" style="display:none;"></div>
+  <div class="sheet-selector" id="selector-paths" style="display:none;">
+    <label>Selected Sheet:</label>
+    <select id="select-paths-sheet"></select>
+  </div>
+</div>
+
+<!-- APP PILOT TAB -->
+<div class="tab-panel" id="panel-app">
+  <div class="drop-zone" id="drop-app">
+    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+    <p>Drop the <strong>APP Pilot - Approved Lanes</strong> file here</p>
+    <p class="hint">First dated sheet (leftmost) = current week — auto-selected</p>
+  </div>
+  <div class="file-info" id="info-app" style="display:none;"></div>
+  <div class="sheet-selector" id="selector-app" style="display:none;">
+    <label>Selected Sheet:</label>
+    <select id="select-app-sheet"></select>
+  </div>
+</div>
+
+<!-- VALIDATION SECTION -->
+<div class="validation-section" id="validation-section">
+  <div class="validation-tabs">
+    <div class="val-tab active" data-val="general">
+      <i class="fa-solid fa-road"></i> Validate Paths
+      <span class="badge" id="badge-general">—</span>
+    </div>
+    <div class="val-tab" data-val="appval">
+      <i class="fa-solid fa-plane-departure"></i> Validate APP
+      <span class="badge" id="badge-app">—</span>
+    </div>
+  </div>
+
+  <!-- GENERAL VALIDATION PANEL -->
+  <div class="val-panel active" id="valpanel-general">
+    <div class="btn-row">
+      <button class="btn-validate" id="btn-validate-general" disabled="">
+        <i class="fa-solid fa-check-double"></i> Run General Path Validation
+      </button>
+      <span class="status-msg" id="msg-general">Upload Template + Approved Paths to enable</span>
+    </div>
+    <div id="results-general" style="display:none;"></div>
+  </div>
+
+  <!-- APP VALIDATION PANEL -->
+  <div class="val-panel" id="valpanel-appval">
+    <div class="btn-row">
+      <button class="btn-validate green" id="btn-validate-app" disabled="">
+        <i class="fa-solid fa-check-double"></i> Run APP Path Validation
+      </button>
+      <span class="status-msg" id="msg-app">Upload Template + APP Pilot Lanes to enable</span>
+    </div>
+    <div id="results-app" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+const state = {
+  checkData: null,       // { headers: [], rows: [] } from Check sheet
+  generalLevers: null,   // lookup from template's General Levers tab
+  fcRegions: null,       // FC -> {group, region}
+  approvedPaths: null,   // { nIXD: Set, rIXD: Set, NonSort: Set } from Approved Paths file
+  appLanes: null,        // { reach: Set, jufang: Set } from APP Pilot Lanes file
+  generalMismatches: [],
+  appMismatches: []
+};
+
+// ==================== NAV TAB SWITCHING ====================
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Validation tab switching
+document.querySelectorAll('.val-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.val-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.val-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('valpanel-' + tab.dataset.val).classList.add('active');
+  });
+});
+
+// ==================== DROP ZONE SETUP ====================
+function setupDropZone(id, processFunc) {
+  const zone = document.getElementById(id);
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.xlsx,.xls'; input.style.display = 'none';
+  zone.appendChild(input);
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files[0]) processFunc(e.dataTransfer.files[0], zone); });
+  input.addEventListener('change', e => { if (e.target.files[0]) processFunc(e.target.files[0], zone); });
+}
+
+function readExcel(file, cb) {
+  const reader = new FileReader();
+  reader.onload = e => { const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellStyles: true }); cb(wb); };
+  reader.readAsArrayBuffer(file);
+}
+
+// ==================== 1. TEMPLATE PROCESSING ====================
+function processTemplate(file, zone) {
+  readExcel(file, wb => {
+    const checkSheet = wb.Sheets['Check'];
+    if (!checkSheet) { alert('"Check" sheet not found!'); return; }
+    
+    const data = XLSX.utils.sheet_to_json(checkSheet, { header: 1 });
+    state.checkData = { headers: data[0], rows: data.slice(1) };
+    
+    // Parse General Levers tab
+    const leverSheet = wb.SheetNames.find(s => s.toLowerCase().includes('general levers'));
+    if (leverSheet) {
+      const leverData = XLSX.utils.sheet_to_json(wb.Sheets[leverSheet], { header: 1 });
+      state.generalLevers = buildGeneralLeversLookup(leverData);
+    }
+    
+    // Parse FC Regions tab
+    const regionSheet = wb.SheetNames.find(s => s.toLowerCase().includes('fc regions'));
+    if (regionSheet) {
+      const regionData = XLSX.utils.sheet_to_json(wb.Sheets[regionSheet], { header: 1 });
+      state.fcRegions = buildFCRegionsLookup(regionData);
+    }
+    
+    // Count POs by category
+    const hdr = state.checkData.headers;
+    const reasonIdx = hdr.indexOf('Reason');
+    const statusIdx = hdr.indexOf('Status');
+    const validStatuses = ['Approved', 'Rejected - Not on Path', 'Rejected - FC Type', 'Rejected - Region'];
+    
+    let generalCount = 0, appCount = 0;
+    state.checkData.rows.forEach(r => {
+      if (!validStatuses.includes(String(r[statusIdx] || '').trim())) return;
+      const reason = String(r[reasonIdx] || '').trim().toLowerCase();
+      if (reason === 'app') appCount++; else generalCount++;
+    });
+    
+    zone.classList.add('loaded');
+    zone.innerHTML = '<i class="fa-solid fa-circle-check upload-icon"></i><p><strong>' + file.name + '</strong></p><p class="hint">Loaded successfully</p>';
+    document.getElementById('info-template').style.display = 'block';
+    document.getElementById('info-template').innerHTML = 
+      '<strong>Total POs:</strong> ' + state.checkData.rows.length +
+      ' | <strong>General (non-APP):</strong> ' + generalCount +
+      ' | <strong>APP:</strong> ' + appCount +
+      (state.generalLevers ? ' | <strong>General Levers:</strong> ' + Object.keys(state.generalLevers).length + ' paths' : '');
+    
+    document.getElementById('dot-template').classList.add('loaded');
+    checkReadiness();
+  });
+}
+
+// ==================== 2. APPROVED PATHS PROCESSING ====================
+function processApprovedPaths(file, zone) {
+  readExcel(file, wb => {
+    // Find Active sheet
+    const activeSheet = wb.SheetNames.find(s => s.toLowerCase().startsWith('active'));
+    const selectEl = document.getElementById('select-paths-sheet');
+    selectEl.innerHTML = '';
+    wb.SheetNames.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      if (s === activeSheet) opt.selected = true;
+      selectEl.appendChild(opt);
+    });
+    
+    parseApprovedPathsSheet(wb, activeSheet || wb.SheetNames[0]);
+    
+    selectEl.addEventListener('change', () => {
+      parseApprovedPathsSheet(wb, selectEl.value);
+      updatePathsInfo();
+    });
+    
+    zone.classList.add('loaded');
+    zone.innerHTML = '<i class="fa-solid fa-circle-check upload-icon"></i><p><strong>' + file.name + '</strong></p><p class="hint">Loaded successfully</p>';
+    document.getElementById('selector-paths').style.display = 'block';
+    updatePathsInfo();
+    document.getElementById('dot-paths').classList.add('loaded');
+    checkReadiness();
+  });
+}
+
+function updatePathsInfo() {
+  const ap = state.approvedPaths;
+  document.getElementById('info-paths').style.display = 'block';
+  document.getElementById('info-paths').innerHTML = 
+    '<strong>Sheet:</strong> ' + document.getElementById('select-paths-sheet').value +
+    ' | <strong>nIXD paths:</strong> ' + (ap.nIXD ? ap.nIXD.size : 0) +
+    ' | <strong>rIXD paths:</strong> ' + (ap.rIXD ? ap.rIXD.size : 0) +
+    ' | <strong>Non-Sort paths:</strong> ' + (ap.NonSort ? ap.NonSort.size : 0) +
+    ' | <strong>1DC paths:</strong> ' + (ap.oneDC ? ap.oneDC.size : 0);
+}
+
+// ==================== 3. APP PILOT LANES PROCESSING ====================
+function processAppLanes(file, zone) {
+  readExcel(file, wb => {
+    // First dated sheet
+    const firstDated = wb.SheetNames.find(s => /\d/.test(s)) || wb.SheetNames[0];
+    const selectEl = document.getElementById('select-app-sheet');
+    selectEl.innerHTML = '';
+    wb.SheetNames.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      if (s === firstDated) opt.selected = true;
+      selectEl.appendChild(opt);
+    });
+    
+    parseAppLanesSheet(wb, firstDated);
+    
+    selectEl.addEventListener('change', () => {
+      parseAppLanesSheet(wb, selectEl.value);
+      updateAppInfo();
+    });
+    
+    zone.classList.add('loaded');
+    zone.innerHTML = '<i class="fa-solid fa-circle-check upload-icon"></i><p><strong>' + file.name + '</strong></p><p class="hint">Loaded successfully</p>';
+    document.getElementById('selector-app').style.display = 'block';
+    updateAppInfo();
+    document.getElementById('dot-app').classList.add('loaded');
+    checkReadiness();
+  });
+}
+
+function updateAppInfo() {
+  const al = state.appLanes;
+  document.getElementById('info-app').style.display = 'block';
+  const totalTakers = al && al.lookup ? Object.values(al.lookup).reduce((sum, s) => sum + s.size, 0) : 0;
+  const combos = al && al.lookup ? Object.keys(al.lookup).length : 0;
+  document.getElementById('info-app').innerHTML = 
+    '<strong>Sheet:</strong> ' + document.getElementById('select-app-sheet').value +
+    ' | <strong>Type|Region combos:</strong> ' + combos +
+    ' | <strong>Total taker entries:</strong> ' + totalTakers;
+}
+
+// ==================== PARSING FUNCTIONS ====================
+
+function buildGeneralLeversLookup(data) {
+  // Columns: 0=FC1 Region, 1=FC2 Region, 2=FC1, 3=FC2, 4=FC1->FC2, 5=FC2->FC1, 6=FC1->FC2 (Y/N), 7=FC2->FC1 (Y/N), 8=Category
+  const lookup = {};
+  if (!data || data.length < 2) return lookup;
+  
+  const headers = data[0];
+  const fc1Idx = headers.indexOf('FC1');
+  const fc2Idx = headers.indexOf('FC2');
+  const catIdx = headers.indexOf('Category');
+  
+  // Approval Y/N columns are at index 6 and 7 (FC1->FC2.1 and FC2->FC1.1)
+  const appr1Idx = 6;
+  const appr2Idx = 7;
+  
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const fc1 = String(row[fc1Idx] || '').trim().toUpperCase();
+    const fc2 = String(row[fc2Idx] || '').trim().toUpperCase();
+    const cat = String(row[catIdx] || '').trim();
+    if (!fc1 || !fc2) continue;
+    
+    const a1 = String(row[appr1Idx] || '').trim().toUpperCase();
+    const a2 = String(row[appr2Idx] || '').trim().toUpperCase();
+    
+    lookup[fc1 + '->' + fc2] = { approved: a1 === 'Y', category: cat };
+    lookup[fc2 + '->' + fc1] = { approved: a2 === 'Y', category: cat };
+  }
+  return lookup;
+}
+
+function buildFCRegionsLookup(data) {
+  const lookup = {};
+  if (!data || data.length < 2) return lookup;
+  for (let i = 1; i < data.length; i++) {
+    const fc = String(data[i][0] || '').trim().toUpperCase();
+    const group = String(data[i][1] || '').trim();
+    const region = String(data[i][2] || '').trim();
+    if (fc) lookup[fc] = { group, region };
+  }
+  return lookup;
+}
+
+function parseApprovedPathsSheet(wb, sheetName) {
+  const sheet = wb.Sheets[sheetName];
+  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  const paths = { nIXD: new Set(), rIXD: new Set(), NonSort: new Set(), oneDC: new Set() };
+  
+  // Helper: check if a cell is blacked out (black fill = removed/deactivated path)
+  function isCellBlackedOut(row, col) {
+    const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+    const cell = sheet[cellRef];
+    if (!cell || !cell.s) return false;
+    const fill = cell.s.fgColor || cell.s.bgColor || (cell.s.patternType && cell.s);
+    // Check multiple fill detection methods
+    if (cell.s.fgColor) {
+      const fg = cell.s.fgColor;
+      if (fg.rgb && (fg.rgb === '000000' || fg.rgb === 'FF000000')) return true;
+      if (fg.theme === 1 && (!fg.tint || fg.tint === 0)) return true;
+    }
+    if (cell.s.bgColor) {
+      const bg = cell.s.bgColor;
+      if (bg.rgb && (bg.rgb === '000000' || bg.rgb === 'FF000000')) return true;
+    }
+    return false;
+  }
+  
+  // Alternative: check if cell fill is black by looking at the style object
+  function isCellHidden(row, col) {
+    const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+    const cell = sheet[cellRef];
+    if (!cell) return false;
+    // SheetJS with cellStyles stores fill info in cell.s
+    if (cell.s && cell.s.fill) {
+      const fill = cell.s.fill;
+      if (fill.fgColor && fill.fgColor.rgb) {
+        const rgb = fill.fgColor.rgb.replace(/^FF/, ''); // Remove alpha
+        if (rgb === '000000') return true;
+      }
+    }
+    return isCellBlackedOut(row, col);
+  }
+  
+  let section = null;
+  let currentGiver = null;
+  
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    const col0 = String(row[0] || '').trim().toLowerCase();
+    const col1 = String(row[1] || '').trim();
+    const col2 = String(row[2] || '').trim().toUpperCase();
+    const col3 = String(row[3] || '').trim().toUpperCase();
+    const col4 = String(row[4] || '').trim().toLowerCase(); // Notes column
+    const col5 = String(row[5] || '').trim().toLowerCase(); // Effective date / removal notes
+    
+    // Section detection
+    if (col0.includes('national ixd')) { section = 'nIXD'; currentGiver = null; continue; }
+    if (col0.includes('regional ixd')) { section = 'rIXD'; currentGiver = null; continue; }
+    if (col0.includes('non-sort') || col0.includes('nonsort') || col0.includes('non sort')) { section = 'NonSort'; currentGiver = null; continue; }
+    if (col0.includes('1dc')) { section = 'oneDC'; currentGiver = null; continue; }
+    
+    if (!section) continue;
+    if (col1.toLowerCase().includes('giver sites') || col1.toLowerCase() === 'grouping') continue;
+    
+    // col2 = Giver (or empty = same giver), col3 = Taker
+    if (col2 && col2 !== 'NAN' && col2 !== 'GIVER' && col2.length >= 3) {
+      // Skip blacked-out givers too
+      if (isCellHidden(i, 2)) { continue; }
+      currentGiver = col2;
+    }
+    
+    if (col3 && col3 !== 'NAN' && col3 !== 'TAKER' && col3 !== 'NOTES' && currentGiver) {
+      // Skip blacked-out cells (removed/deactivated paths)
+      if (isCellHidden(i, 3)) { continue; }
+      // Skip paths marked as "removed" in notes columns (E or F) 
+      // e.g., "Effective 6/15 PM: SMF3 > SBD1 removed due to unit cap in week 25"
+      const notesText = col4 + ' ' + col5;
+      if (notesText.includes('removed')) {
+        // Check if this specific taker is mentioned in the removal note
+        // If the note contains the taker FC code, skip it
+        const takers = col3.split(/[\n\r]+/).map(t => t.trim().toUpperCase()).filter(t => t.length >= 3);
+        const notesUpper = notesText.toUpperCase();
+        const activeTakers = takers.filter(t => !notesUpper.includes(t));
+        // Only add takers NOT mentioned in removal notes
+        activeTakers.forEach(t => { paths[section].add(currentGiver + '->' + t); });
+        continue;
+      }
+      // Handle multi-value (newline separated) 
+      col3.split(/[\n\r]+/).forEach(t => { 
+        t = t.trim().toUpperCase();
+        if (t && t.length >= 3) {
+          paths[section].add(currentGiver + '->' + t);
+        }
+      });
+    }
+  }
+  
+  state.approvedPaths = paths;
+}
+
+function parseAppLanesSheet(wb, sheetName) {
+  const data = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1 });
+  // Build a strict lookup: TYPE|REGION -> Set of approved takers
+  // Each taker is ONLY valid for its specific Type + Region combination
+  const lookup = {};  // key: "TYPE|REGION" => Set of taker FCs
+  
+  // Structure from screenshot:
+  // Left side: cols 0=Type(nIXD/rIXD), 1=Region, 2=TAKER1, 3=TAKER2
+  // Right side: cols 8=TYPE(USNS), 9=REGION, 10=TAKER1, 11=TAKER2
+  // Row 0 = title, Row 1 = headers (Type, Region, TAKER 1, TAKER 2, ...)
+  // Rows 2+: data
+  
+  function addTaker(type, region, taker) {
+    if (!type || !region || !taker || taker === 'NAN' || taker === 'N/A' || taker.length < 3) return;
+    const key = type + '|' + region;
+    if (!lookup[key]) lookup[key] = new Set();
+    lookup[key].add(taker);
+  }
+  
+  for (let i = 2; i < data.length; i++) {
+    const row = data[i];
+    
+    // Left side: IXD types (nIXD, rIXD)
+    const lType = String(row[0] || '').trim().toUpperCase();
+    const lRegion = String(row[1] || '').trim().toUpperCase();
+    const lTaker1 = String(row[2] || '').trim().toUpperCase();
+    const lTaker2 = String(row[3] || '').trim().toUpperCase();
+    
+    addTaker(lType, lRegion, lTaker1);
+    addTaker(lType, lRegion, lTaker2);
+    
+    // Right side: USNS (Non-Sort)
+    const rType = String(row[8] || '').trim().toUpperCase();
+    const rRegion = String(row[9] || '').trim().toUpperCase();
+    const rTaker1 = String(row[10] || '').trim().toUpperCase();
+    const rTaker2 = String(row[11] || '').trim().toUpperCase();
+    
+    addTaker(rType, rRegion, rTaker1);
+    addTaker(rType, rRegion, rTaker2);
+  }
+  
+  state.appLanes = { lookup };
+  
+  // Debug: log what was parsed
+  console.log('APP Lanes parsed:', Object.keys(lookup).length, 'type|region combos');
+  for (const [k, v] of Object.entries(lookup)) {
+    console.log(' ', k, '->', [...v].join(', '));
+  }
+}
+
+// ==================== READINESS CHECK ====================
+function checkReadiness() {
+  const hasTemplate = !!state.checkData;
+  const hasPaths = !!state.approvedPaths;
+  const hasApp = !!state.appLanes;
+  
+  const btnGeneral = document.getElementById('btn-validate-general');
+  const btnApp = document.getElementById('btn-validate-app');
+  
+  btnGeneral.disabled = !(hasTemplate && hasPaths);
+  btnApp.disabled = !(hasTemplate && hasApp);
+  
+  document.getElementById('msg-general').textContent = 
+    (hasTemplate && hasPaths) ? '✓ Ready to validate non-APP POs' : 'Upload Template + Approved Paths to enable';
+  document.getElementById('msg-app').textContent = 
+    (hasTemplate && hasApp) ? '✓ Ready to validate APP POs' : 'Upload Template + APP Pilot Lanes to enable';
+}
+
+// ==================== VALIDATION: GENERAL (NON-APP) ====================
+function runGeneralValidation() {
+  const btn = document.getElementById('btn-validate-general');
+  btn.innerHTML = '<span class="spinner"></span> Validating...'; btn.disabled = true;
+  
+  setTimeout(() => {
+    const mismatches = validateGeneral();
+    state.generalMismatches = mismatches;
+    document.getElementById('badge-general').textContent = mismatches.length > 0 ? mismatches.length + ' issues' : '✓';
+    displayGeneralResults(mismatches);
+    btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Run General Path Validation';
+    btn.disabled = false;
+  }, 50);
+}
+
+function validateGeneral() {
+  const { headers, rows } = state.checkData;
+  const mismatches = [];
+  
+  const colPO = headers.indexOf('PO');
+  const colBookedFC = headers.indexOf('Booked FC');
+  const colNewFC = headers.indexOf('New FC');
+  const colReason = headers.indexOf('Reason');
+  const colStatus = headers.indexOf('Status');
+  const colBookedType = headers.indexOf('Booked FC Type');
+  const colNewType = headers.indexOf('New FC Type');
+  const colBookedRegion = headers.indexOf('Booked FC Region');
+  const colNewRegion = headers.indexOf('New FC Region');
+  
+  const statusLetter = getColLetter(colStatus);
+  const validStatuses = ['Approved', 'Rejected - Not on Path', 'Rejected - FC Type', 'Rejected - Region'];
+  
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const reason = String(row[colReason] || '').trim().toLowerCase();
+    const status = String(row[colStatus] || '').trim();
+    
+    // Skip APP POs — only validate non-APP here
+    if (reason === 'app') continue;
+    if (!validStatuses.includes(status)) continue;
+    if (String(row[colBookedFC] || '').trim().toUpperCase() === String(row[colNewFC] || '').trim().toUpperCase()) continue; // Skip No Change POs (Booked FC = New FC, manually overridden in Step 4c)
+    
+    const po = String(row[colPO] || '').trim();
+    const bookedFC = String(row[colBookedFC] || '').trim().toUpperCase();
+    const newFC = String(row[colNewFC] || '').trim().toUpperCase();
+    const bookedType = String(row[colBookedType] || '').trim();
+    const newType = String(row[colNewType] || '').trim();
+    const bookedRegion = String(row[colBookedRegion] || '').trim();
+    const newRegion = String(row[colNewRegion] || '').trim();
+    
+    const excelRow = i + 2; // header + 1-based
+    const cellAddr = statusLetter + excelRow;
+    
+    // Determine expected approval
+    const result = checkGeneralPath(bookedFC, newFC, bookedType, newType, bookedRegion, newRegion);
+    
+    const isApproved = status === 'Approved';
+    
+    if (isApproved && !result.approved) {
+      mismatches.push({
+        cellAddr, po, bookedFC, newFC, reason: String(row[colReason] || '').trim(),
+        currentStatus: status,
+        expectedStatus: result.reason || 'Rejected - Not on Path',
+        issue: 'should-reject',
+        detail: bookedFC + ' → ' + newFC,
+        fcType: bookedType
+      });
+    } else if (!isApproved && result.approved) {
+      mismatches.push({
+        cellAddr, po, bookedFC, newFC, reason: String(row[colReason] || '').trim(),
+        currentStatus: status,
+        expectedStatus: 'Approved',
+        issue: 'should-approve',
+        detail: bookedFC + ' → ' + newFC,
+        fcType: bookedType
+      });
+    }
+  }
+  return mismatches;
+}
+
+function checkGeneralPath(bookedFC, newFC, bookedType, newType, bookedRegion, newRegion) {
+  const pathKey = bookedFC + '->' + newFC;
+  
+  // Check 1: FC Type — if New FC type is 0 or empty, it's an FC type mismatch
+  if (newType === '0' || newType === '' || newType === 'undefined') {
+    return { approved: false, reason: 'Rejected - FC Type' };
+  }
+  
+  // Check 2: If booked and new types don't match (e.g., National vs Regional) — reject
+  if (bookedType && newType && bookedType !== '0' && newType !== '0' && bookedType !== newType) {
+    return { approved: false, reason: 'Rejected - FC Type' };
+  }
+  
+  // Check 3: General Levers lookup (from template — this is the pre-built Y/N table)
+  if (state.generalLevers && state.generalLevers[pathKey]) {
+    return { approved: state.generalLevers[pathKey].approved, reason: state.generalLevers[pathKey].approved ? null : 'Rejected - Not on Path' };
+  }
+  
+  // Check 4: Approved Paths file (active sheet — giver/taker pairs)
+  if (state.approvedPaths) {
+    let section = null;
+    const bt = bookedType.toLowerCase();
+    if (bt.includes('national')) section = 'nIXD';
+    else if (bt.includes('regional')) section = 'rIXD';
+    else if (bt.includes('nonsort') || bt.includes('non-sort') || bt === 'usns') section = 'NonSort';
+    else if (bt.includes('1dc')) section = 'oneDC';
+    
+    if (section && state.approvedPaths[section] && state.approvedPaths[section].has(pathKey)) {
+      return { approved: true, reason: null };
+    }
+    
+    // Check all sections in case type mapping is off
+    for (const sec of ['nIXD', 'rIXD', 'NonSort', 'oneDC']) {
+      if (state.approvedPaths[sec] && state.approvedPaths[sec].has(pathKey)) {
+        return { approved: true, reason: null };
+      }
+    }
+  }
+  
+  // Not found anywhere
+  return { approved: false, reason: 'Rejected - Not on Path' };
+}
+
+// ==================== VALIDATION: APP ====================
+function runAppValidation() {
+  const btn = document.getElementById('btn-validate-app');
+  btn.innerHTML = '<span class="spinner"></span> Validating...'; btn.disabled = true;
+  
+  setTimeout(() => {
+    const mismatches = validateApp();
+    state.appMismatches = mismatches;
+    document.getElementById('badge-app').textContent = mismatches.length > 0 ? mismatches.length + ' issues' : '✓';
+    displayAppResults(mismatches);
+    btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Run APP Path Validation';
+    btn.disabled = false;
+  }, 50);
+}
+
+function validateApp() {
+  const { headers, rows } = state.checkData;
+  const mismatches = [];
+  
+  const colPO = headers.indexOf('PO');
+  const colBookedFC = headers.indexOf('Booked FC');
+  const colNewFC = headers.indexOf('New FC');
+  const colReason = headers.indexOf('Reason');
+  const colStatus = headers.indexOf('Status');
+  const colBookedType = headers.indexOf('Booked FC Type');
+  const colNewType = headers.indexOf('New FC Type');
+  const colBookedRegion = headers.indexOf('Booked FC Region');
+  const colNewRegion = headers.indexOf('New FC Region');
+  
+  const statusLetter = getColLetter(colStatus);
+  const validStatuses = ['Approved', 'Rejected - Not on Path', 'Rejected - FC Type', 'Rejected - Region'];
+  
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const reason = String(row[colReason] || '').trim().toLowerCase();
+    const status = String(row[colStatus] || '').trim();
+    
+    // Only APP POs
+    if (reason !== 'app') continue;
+    if (!validStatuses.includes(status)) continue;
+    if (String(row[colBookedFC] || '').trim().toUpperCase() === String(row[colNewFC] || '').trim().toUpperCase()) continue; // Skip No Change POs (Booked FC = New FC, manually overridden in Step 4c)
+    
+    const po = String(row[colPO] || '').trim();
+    const bookedFC = String(row[colBookedFC] || '').trim().toUpperCase();
+    const newFC = String(row[colNewFC] || '').trim().toUpperCase();
+    const bookedType = String(row[colBookedType] || '').trim();
+    const newType = String(row[colNewType] || '').trim();
+    const bookedRegion = String(row[colBookedRegion] || '').trim().toUpperCase();
+    const newRegion = String(row[colNewRegion] || '').trim().toUpperCase();
+    
+    const excelRow = i + 2;
+    const cellAddr = statusLetter + excelRow;
+    
+    const result = checkAppPath(bookedFC.toUpperCase(), newFC.toUpperCase(), bookedType, newType, bookedRegion.toUpperCase(), newRegion.toUpperCase());
+    
+    const isApproved = status === 'Approved';
+    
+    if (isApproved && !result.approved) {
+      mismatches.push({
+        cellAddr, po, bookedFC, newFC, reason: 'App',
+        currentStatus: status,
+        expectedStatus: result.reason || 'Rejected - Not on Path',
+        issue: 'should-reject',
+        detail: 'New FC: ' + newFC + ' | Region: ' + (newRegion || bookedRegion),
+        fcType: bookedType
+      });
+    } else if (!isApproved && result.approved) {
+      mismatches.push({
+        cellAddr, po, bookedFC, newFC, reason: 'App',
+        currentStatus: status,
+        expectedStatus: 'Approved',
+        issue: 'should-approve',
+        detail: 'New FC: ' + newFC + ' | Region: ' + (newRegion || bookedRegion),
+        fcType: bookedType
+      });
+    }
+  }
+  return mismatches;
+}
+
+function checkAppPath(bookedFC, newFC, bookedType, newType, bookedRegion, newRegion) {
+  if (!state.appLanes || !state.appLanes.lookup) return { approved: false, reason: 'No APP data' };
+  
+  const lookup = state.appLanes.lookup;
+  
+  // Step 1: Normalize the Booked FC type to match APP file format
+  // APP file uses: NIXD, RIXD, USNS
+  let typeKey = '';  
+  const bt = bookedType.toLowerCase();
+  if (bt.includes('national')) typeKey = 'NIXD';
+  else if (bt.includes('regional')) typeKey = 'RIXD';
+  else if (bt === 'usns' || bt.includes('nonsort') || bt.includes('non-sort')) typeKey = 'USNS';
+  
+  if (!typeKey) {
+    return { approved: false, reason: 'Rejected - FC Type' };
+  }
+  
+  // Step 2: Determine the Booked FC's region
+  // Check tab may show "0" or empty — fall back to FC Regions lookup
+  let region = '';
+  if (bookedRegion && bookedRegion !== '0' && bookedRegion !== 'NAN') {
+    region = bookedRegion;
+  } else if (newRegion && newRegion !== '0' && newRegion !== 'NAN') {
+    region = newRegion;
+  }
+  
+  // If region is still empty/0, try FC Regions lookup from template
+  if (!region && state.fcRegions && bookedFC) {
+    const fcInfo = state.fcRegions[bookedFC];
+    if (fcInfo && fcInfo.region) {
+      region = fcInfo.region.toUpperCase();
+    }
+  }
+  
+  if (!region) {
+    return { approved: false, reason: 'Rejected - Region' };
+  }
+  
+  // Step 2b: Normalize region names to match APP file conventions
+  // FC Regions tab might say "MidAtlantic" but APP file says "MA_NE"
+  // APP file IXD regions: Central, East, West, MA_NE, MS_FL, MW_GL, SW_NW, TX_MT
+  // APP file USNS regions: FL, GL, MA, MS, MW, NE, NW, SW, MT, TX
+  // The region from Check tab or FC Regions should already match since they come from the same source
+  // But if there's a case mismatch or spacing issue, normalize
+  region = region.trim().replace(/\s+/g, '_');
+  // Also try without underscores for matching
+  const regionVariants = [region, region.replace(/_/g, ''), region.replace(/_/g, ' ')];
+  
+  // Step 3: Strict check — TYPE|REGION must have the New FC as an approved taker
+  const key = typeKey + '|' + region;
+  
+  if (lookup[key] && lookup[key].has(newFC)) {
+    return { approved: true, reason: null };
+  }
+  
+  // Try region variants
+  for (const rv of regionVariants) {
+    const altKey = typeKey + '|' + rv;
+    if (altKey !== key && lookup[altKey] && lookup[altKey].has(newFC)) {
+      return { approved: true, reason: null };
+    }
+  }
+  
+  // Step 4: Try all known keys for this type to see if NewFC is a taker ANYWHERE for this type
+  // If found in a different region, it's a Region mismatch (not a path issue)
+  let foundInOtherRegion = false;
+  for (const [k, takers] of Object.entries(lookup)) {
+    if (k.startsWith(typeKey + '|') && takers.has(newFC)) {
+      foundInOtherRegion = true;
+      break;
+    }
+  }
+  
+  if (foundInOtherRegion) {
+    return { approved: false, reason: 'Rejected - Region' };
+  }
+  
+  // Check if NewFC exists in ANY type
+  let foundInOtherType = false;
+  for (const [k, takers] of Object.entries(lookup)) {
+    if (takers.has(newFC)) {
+      foundInOtherType = true;
+      break;
+    }
+  }
+  
+  if (foundInOtherType) {
+    return { approved: false, reason: 'Rejected - FC Type' };
+  }
+  
+  return { approved: false, reason: 'Rejected - Not on Path' };
+}
+
+// ==================== DISPLAY RESULTS ====================
+function displayGeneralResults(mismatches) {
+  const container = document.getElementById('results-general');
+  container.style.display = 'block';
+  
+  const { headers, rows } = state.checkData;
+  const statusIdx = headers.indexOf('Status');
+  const reasonIdx = headers.indexOf('Reason');
+  const validStatuses = ['Approved', 'Rejected - Not on Path', 'Rejected - FC Type', 'Rejected - Region'];
+  const totalChecked = rows.filter(r => {
+    const reason = String(r[reasonIdx] || '').trim().toLowerCase();
+    return reason !== 'app' && validStatuses.includes(String(r[statusIdx] || '').trim());
+  }).length;
+  
+  const shouldReject = mismatches.filter(m => m.issue === 'should-reject').length;
+  const shouldApprove = mismatches.filter(m => m.issue === 'should-approve').length;
+  
+  container.innerHTML = `
+    <div class="results-summary">
+      <div class="summary-card"><div class="label">POs Checked</div><div class="value">${totalChecked}</div></div>
+      <div class="summary-card"><div class="label">Mismatches</div><div class="value ${mismatches.length > 0 ? 'red' : 'green'}">${mismatches.length}</div></div>
+      <div class="summary-card"><div class="label">Should be Rejected</div><div class="value red">${shouldReject}</div></div>
+      <div class="summary-card"><div class="label">Should be Approved</div><div class="value orange">${shouldApprove}</div></div>
+    </div>
+    <div class="filter-row">
+      <label>Filter:</label>
+      <select id="filter-general">
+        <option value="all">All (${mismatches.length})</option>
+        <option value="should-reject">Should be Rejected (${shouldReject})</option>
+        <option value="should-approve">Should be Approved (${shouldApprove})</option>
+      </select>
+      <button class="btn-export" onclick="exportCSV('general')"><i class="fa-solid fa-download"></i> Export CSV</button>
+    </div>
+    <div class="results-table-wrapper" id="table-general"></div>
+  `;
+  
+  document.getElementById('filter-general').addEventListener('change', e => renderMismatchTable('table-general', mismatches, e.target.value));
+  renderMismatchTable('table-general', mismatches, 'all');
+}
+
+function displayAppResults(mismatches) {
+  const container = document.getElementById('results-app');
+  container.style.display = 'block';
+  
+  const { headers, rows } = state.checkData;
+  const statusIdx = headers.indexOf('Status');
+  const reasonIdx = headers.indexOf('Reason');
+  const validStatuses = ['Approved', 'Rejected - Not on Path', 'Rejected - FC Type', 'Rejected - Region'];
+  const totalChecked = rows.filter(r => {
+    const reason = String(r[reasonIdx] || '').trim().toLowerCase();
+    return reason === 'app' && validStatuses.includes(String(r[statusIdx] || '').trim());
+  }).length;
+  
+  const shouldReject = mismatches.filter(m => m.issue === 'should-reject').length;
+  const shouldApprove = mismatches.filter(m => m.issue === 'should-approve').length;
+  
+  container.innerHTML = `
+    <div class="results-summary">
+      <div class="summary-card"><div class="label">APP POs Checked</div><div class="value">${totalChecked}</div></div>
+      <div class="summary-card"><div class="label">Mismatches</div><div class="value ${mismatches.length > 0 ? 'red' : 'green'}">${mismatches.length}</div></div>
+      <div class="summary-card"><div class="label">Should be Rejected</div><div class="value red">${shouldReject}</div></div>
+      <div class="summary-card"><div class="label">Should be Approved</div><div class="value orange">${shouldApprove}</div></div>
+    </div>
+    <div class="filter-row">
+      <label>Filter:</label>
+      <select id="filter-app">
+        <option value="all">All (${mismatches.length})</option>
+        <option value="should-reject">Should be Rejected (${shouldReject})</option>
+        <option value="should-approve">Should be Approved (${shouldApprove})</option>
+      </select>
+      <button class="btn-export" onclick="exportCSV('app')"><i class="fa-solid fa-download"></i> Export CSV</button>
+    </div>
+    <div class="results-table-wrapper" id="table-app"></div>
+  `;
+  
+  document.getElementById('filter-app').addEventListener('change', e => renderMismatchTable('table-app', mismatches, e.target.value));
+  renderMismatchTable('table-app', mismatches, 'all');
+}
+
+function renderMismatchTable(containerId, mismatches, filter) {
+  const filtered = filter === 'all' ? mismatches : mismatches.filter(m => m.issue === filter);
+  const wrapper = document.getElementById(containerId);
+  
+  if (filtered.length === 0) {
+    wrapper.innerHTML = '<div class="no-issues"><i class="fa-solid fa-circle-check"></i><p>No mismatches found!</p></div>';
+    return;
+  }
+  
+  let html = `<table><thead><tr>
+    <th>Cell</th><th>PO</th><th>Booked FC</th><th>New FC</th><th>Reason</th>
+    <th>Current Status</th><th>Expected Status</th><th>Issue</th>
+  </tr></thead><tbody>`;
+  
+  filtered.forEach(m => {
+    const issueClass = m.issue === 'should-reject' ? 'issue-reject' : 'issue-approve';
+    const issueText = m.issue === 'should-reject' ? '⚠️ Should Reject' : '✅ Should Approve';
+    html += `<tr>
+      <td class="cell-addr">${m.cellAddr}</td>
+      <td>${m.po}</td>
+      <td>${m.bookedFC}</td>
+      <td>${m.newFC}</td>
+      <td>${m.reason}</td>
+      <td>${m.currentStatus}</td>
+      <td>${m.expectedStatus}</td>
+      <td class="${issueClass}">${issueText}</td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table>';
+  wrapper.innerHTML = html;
+}
+
+// ==================== EXPORT ====================
+function exportCSV(type) {
+  const data = type === 'general' ? state.generalMismatches : state.appMismatches;
+  if (!data || data.length === 0) return;
+  
+  let csv = 'Cell Address,PO,Booked FC,New FC,Reason,Current Status,Expected Status,Issue\n';
+  data.forEach(m => {
+    csv += `${m.cellAddr},${m.po},${m.bookedFC},${m.newFC},"${m.reason}","${m.currentStatus}","${m.expectedStatus}",${m.issue}\n`;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'PO_Mismatches_' + type + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== UTILITY ====================
+function getColLetter(idx) {
+  let letter = ''; let n = idx;
+  while (n >= 0) { letter = String.fromCharCode((n % 26) + 65) + letter; n = Math.floor(n / 26) - 1; }
+  return letter;
+}
+
+// ==================== INIT ====================
+setupDropZone('drop-template', processTemplate);
+setupDropZone('drop-paths', processApprovedPaths);
+setupDropZone('drop-app', processAppLanes);
+document.getElementById('btn-validate-general').addEventListener('click', runGeneralValidation);
+document.getElementById('btn-validate-app').addEventListener('click', runAppValidation);
+</script>
+
+<div class="watermark">ROC NA IB | Built by Pavan Kumar [kumrsdm] • SOP by Veerapu Anusha [bveerapu]</div>
+
+
+
+</body></html>
