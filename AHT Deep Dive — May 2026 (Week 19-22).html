@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html><head><style id="qw-theme">:root {
+  --color-bg: #faf9fc;
+  --color-text: #1a1a1a;
+  --color-navbar-bg: #f9f9fb;
+  --color-bg-chat-view: #fcfcfd;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f9fafb;
+  --color-bg-hover: #f3f4f6;
+  --color-surface: #f9fafb;
+  --color-surface-hover: #f3f4f6;
+  --color-surface-active: #e5e7eb;
+  --color-border: rgba(0, 0, 0, .12);
+  --color-border-light: rgba(0, 0, 0, .06);
+  --color-border-strong: #d1d5db;
+  --color-primary: #4200db;
+  --color-primary-dark: #35009e;
+  --color-primary-light: #8575ff;
+  --color-primary-bg: #e8e6ff;
+  --color-primary-hover-border: #35009e;
+  --color-nav-icon-active: #4200db;
+  --color-nav-hover-border: #4200db;
+  --color-primary-alpha-3: color-mix(in srgb, #4200db 3%, transparent);
+  --color-primary-alpha-5: color-mix(in srgb, #4200db 5%, transparent);
+  --color-primary-alpha-8: color-mix(in srgb, #4200db 8%, transparent);
+  --color-primary-alpha-12: color-mix(in srgb, #4200db 12%, transparent);
+  --color-primary-alpha-15: color-mix(in srgb, #4200db 15%, transparent);
+  --color-primary-alpha-20: color-mix(in srgb, #4200db 20%, transparent);
+  --color-primary-alpha-25: color-mix(in srgb, #4200db 25%, transparent);
+  --color-primary-alpha-30: color-mix(in srgb, #4200db 30%, transparent);
+  --color-primary-alpha-40: color-mix(in srgb, #4200db 40%, transparent);
+  --color-primary-alpha-50: color-mix(in srgb, #4200db 50%, transparent);
+  --color-primary-alpha-60: color-mix(in srgb, #4200db 60%, transparent);
+  --color-primary-subtle: color-mix(in srgb, #4200db 12%, transparent);
+  --color-primary-border: color-mix(in srgb, #4200db 30%, transparent);
+  --color-focus-ring: color-mix(in srgb, #4200db 50%, transparent);
+  --color-sidebar-hover: color-mix(in srgb, #4200db 12%, transparent);
+  --color-accent: #4200db;
+  --color-accent-foreground: #4200db;
+  --color-accent-dark: #35009e;
+  --color-accent-light: #e8e6ff;
+  --color-accent-inverse: #ffffff;
+  --color-link: #4200db;
+  --color-primary-gradient-end: #e8e6ff;
+  --color-primary-bg-solid: #e8e6ff;
+  --color-user-bubble: #F3F3F7;
+  --color-text-secondary: #5e5e5e;
+  --color-text-tertiary: #656871;
+  --color-text-muted: #9ca3af;
+  --color-text-on-primary: #ffffff;
+  --color-success: #00802f;
+  --color-success-dark: #00471e;
+  --color-success-light: #d9ffd6;
+  --color-success-hover: #005c26;
+  --color-success-bg: #e6f5eb;
+  --color-success-border: #b3d9bf;
+  --color-success-foreground: #00802f;
+  --color-success-dark-foreground: #00471e;
+  --color-success-text: #00471e;
+  --color-error: #db0000;
+  --color-error-dark: #700000;
+  --color-error-light: #ffe0e0;
+  --color-error-hover: #ffe0e0;
+  --color-error-bg: #fceaea;
+  --color-error-border: #f2cccc;
+  --color-error-active-border: #db0000;
+  --color-error-foreground: #db0000;
+  --color-error-dark-foreground: #700000;
+  --color-error-inverse: #ffffff;
+  --color-error-text: #700000;
+  --color-warning: #f2b100;
+  --color-warning-dark: #573a00;
+  --color-warning-light: #fffbbd;
+  --color-warning-hover: #db9200;
+  --color-warning-bg: #fef7e6;
+  --color-warning-border: #f9dfa3;
+  --color-warning-foreground: #f2b100;
+  --color-warning-dark-foreground: #573a00;
+  --color-warning-inverse: #573a00;
+  --color-surface-warning: #fffbbd;
+  --color-text-warning: #573a00;
+  --color-info: #006ce0;
+  --color-info-dark: #002a66;
+  --color-info-light: #d1f1ff;
+  --color-info-hover: #003b8f;
+  --color-info-bg: #ebf3fc;
+  --color-info-border: #b3d1f0;
+  --color-info-foreground: #006ce0;
+  --color-info-dark-foreground: #002a66;
+  --color-info-inverse: #ffffff;
+  --color-overlay: rgba(0, 0, 0, .5);
+  --color-shadow: rgba(0, 0, 0, .08);
+  --color-hover: rgba(0, 0, 0, .05);
+  --color-tooltip-bg: rgba(0, 0, 0, .85);
+  --color-tooltip-text: #ffffff;
+  --color-voice-purple: #8575ff;
+  --color-voice-purple-dark: #4200db;
+  --color-voice-purple-light: #8575ff;
+  --color-voice-red: #db0000;
+  --color-voice-red-dark: #700000;
+  --color-voice-amber: #f2b100;
+  --color-voice-purple-glow: rgba(66, 0, 219, .4);
+  --color-voice-red-glow: rgba(219, 0, 0, .4);
+  --font-sans: "Amazon Ember", "Helvetica Neue", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
+  --text-2xs: .5625rem;
+  --text-xs: .625rem;
+  --text-sm: .6875rem;
+  --text-base: .75rem;
+  --text-md: .8125rem;
+  --text-lg: .875rem;
+  --text-xl: 1rem;
+  --text-2xl: 1.125rem;
+  --text-3xl: 1.25rem;
+  --text-4xl: 1.5rem;
+  --text-5xl: 2rem;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-card: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 8px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, .08);
+  --color-success-bg-solid: #d9ffd6;
+  --color-error-bg-solid: #ffe0e0;
+  --color-error-border-solid: #ffe0e0;
+  --color-warning-bg-solid: #fffbbd;
+  --color-warning-text: #573a00;
+  --color-info-bg-solid: #d1f1ff;
+  --color-info-bg-solid-alt: #d1f1ff;
+  --color-info-text: #002a66;
+  --color-info-text-alt: #002a66;
+  --color-emerald: #10b981;
+  --color-teal: #4ecdc4;
+  --color-code-bg: #F3F3F7;
+  --color-code-header-bg: #f1f3f5;
+  --color-code-text: #24292e;
+  --color-code-border: #e1e4e8;
+  --color-code-muted: #6a737d;
+  --color-inline-code-bg: #F3F3F7;
+  --color-inline-code-text: #24292e;
+  --color-inline-code-border: #e1e4e8;
+  --color-scrollbar-thumb: #d1d5db;
+  --color-scrollbar-track: transparent;
+  --color-graph-node-text: #333333;
+  --color-graph-node-text-dim: #7F8C8D;
+  --color-graph-edge-default: #95A5A6;
+  --color-graph-edge-cross: #E67E22;
+  --color-graph-edge-text: #666666;
+  --color-graph-edge-stroke: #ffffff;
+  --color-graph-highlight-bg: #FF6B6B;
+  --color-graph-highlight-border: #E74C3C;
+  --color-graph-search-bg: #FFD700;
+  --color-graph-search-border: #FFA500;
+  --color-graph-focus-border: #C0392B;
+  --color-graph-external-border: #95A5A6;
+  --color-graph-cat-file: #3498DB;
+  --color-graph-cat-folder: #7F8C8D;
+  --color-graph-cat-file-aggregate: #2980B9;
+  --color-graph-cat-class: #9B59B6;
+  --color-graph-cat-function: #2ECC71;
+  --color-graph-cat-method: #1ABC9C;
+  --color-graph-cat-variable: #F39C12;
+  --color-graph-cat-import: #D35400;
+  --color-graph-cat-module: #5B6ABF;
+  --color-graph-cat-concept: #E74C3C;
+  --color-graph-cat-person: #FF6B6B;
+  --color-graph-cat-org: #4ECDC4;
+  --color-graph-cat-organization: #4ECDC4;
+  --color-graph-cat-product: #A29BFE;
+  --color-graph-cat-metric: #FD79A8;
+  --color-graph-cat-location: #34495E;
+  --color-graph-cat-date: #E056A0;
+  --color-graph-cat-code: #3498DB;
+  --color-graph-cat-doc: #7F8C8D;
+  --color-graph-cat-url: #00B894;
+  --color-graph-cat-email: #6C5CE7;
+  --color-graph-cat-unknown: #BDC3C7;
+  --color-graph-rel-contains: #BDC3C7;
+  --color-graph-rel-extends: #9B59B6;
+  --color-graph-rel-implements: #3498DB;
+  --color-graph-rel-imports: #E67E22;
+  --color-graph-rel-uses: #2ECC71;
+  --color-graph-rel-calls: #27AE60;
+  --color-graph-rel-references: #F39C12;
+  --color-graph-rel-related-to: #95A5A6;
+  --color-graph-rel-works-on: #E74C3C;
+  --color-graph-rel-owns: #1ABC9C;
+  --color-graph-rel-depends-on: #E67E22;
+  --color-graph-rel-parent-of: #BDC3C7;
+  --qs-content: #fff;
+  --qs-main: #fff;
+  --qs-primary-foreground: #131920;
+  --qs-secondary-foreground: #656871;
+  --qs-tertiary-foreground: #9ca3af;
+  --qs-placeholder-foreground: #8c8c94;
+  --qs-divider: #dedee3;
+  --qs-default-border: #8c8c94;
+  --qs-neutral-soft: #b4b4bb;
+  --qs-neutral-gray-50: #f9fafb;
+  --qs-tertiary-background: #f9fafb;
+  --qs-action-hover: #f3f3f7;
+  --qs-primary-default: #4200db;
+  --qs-primary-dark: #35009e;
+  --qs-primary-light: #e8e6ff;
+  --qs-success-default: #00802f;
+  --qs-error-default: #db0000;
+  --qs-font-sans: "Amazon Ember", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+  --qs-font-family: "Amazon Ember", "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+  --qs-font-base-letter-spacing: .15px;
+  --qs-shadow-sm: 0 0 2px 0 #00000029, 0 0 4px 0 #00000029;
+  --qs-shadow-md: 0 0 2px 0 #00000029, 0 2px 8px 1px #00000029;
+  --qs-shadow-lg: 0 4px 16px 4px #00000029, 0 2px 6px 1px #00000029;
+  --qs-shadow-xl: 0 4px 8px 2px #00000029, 0 6px 20px 4px #00000029;
+  --qs-width-modal-sm: 384px;
+  --qs-width-modal-md: 600px;
+  --qs-width-modal-lg: 1136px;
+  --qs-grid-gap: 16px;
+  --qs-grid-gap-xl: 24px;
+  --qs-primary-medium: #8575ff;
+  --qs-primary-inverse: #fff;
+  --qs-neutral-lightest: #f9f9fb;
+  --qs-neutral-light: #f3f3f7;
+  --qs-neutral-default: #dedee3;
+  --qs-neutral-medium: #8c8c94;
+  --qs-neutral-deep: #656871;
+  --qs-neutral-dark: #333843;
+  --qs-neutral-strong: #131920;
+  --qs-neutral-white: #fff;
+  --qs-neutral-black: #000;
+  --qs-success-medium: #005c26;
+  --qs-success-dark: #00471e;
+  --qs-success-light: #d9ffd6;
+  --qs-success-inverse: #fff;
+  --qs-info-default: #006ce0;
+  --qs-info-medium: #003b8f;
+  --qs-info-dark: #002a66;
+  --qs-info-light: #d1f1ff;
+  --qs-info-inverse: #fff;
+  --qs-warning-default: #f2b100;
+  --qs-warning-medium: #db9200;
+  --qs-warning-dark: #573a00;
+  --qs-warning-light: #fffbbd;
+  --qs-warning-inverse: #573a00;
+  --qs-warning-experimental: #f2b100;
+  --qs-warning-experimental-light: #fffbbd;
+  --qs-warning-experimental-light-foreground: #fffbbd;
+  --qs-error-medium: #900;
+  --qs-error-dark: #700000;
+  --qs-error-light: #ffe0e0;
+  --qs-error-inverse: #fff;
+  --qs-connection-default: #db3300;
+  --qs-connection-soft: #ff997a;
+  --qs-connection-light: #ffe0d6;
+  --qs-connection-dark: #661800;
+  --qs-automation-default: #b3008f;
+  --qs-automation-medium: #d600ba;
+  --qs-automation-soft: #ff94f1;
+  --qs-automation-light: #ffe0fb;
+  --qs-automation-dark: #660052;
+  --qs-insight-default: #a000b8;
+  --qs-insight-soft: #f299ff;
+  --qs-insight-light: #fce6ff;
+  --qs-insight-dark: #590066;
+  --qs-visualization-default: #7300e5;
+  --qs-visualization-soft: #d4a8ff;
+  --qs-visualization-light: #f2e5ff;
+  --qs-visualization-dark: #45008a;
+  --qs-spice: #ff9800;
+  --qs-coachmark: #006ce0;
+  --qs-brand: #fff;
+  --qs-brand-foreground: #131920;
+  --qs-brand-navbar: #131920;
+  --qs-brand-navbar-foreground: #fff;
+  --qs-brand-navbar-light: #dedee3;
+  --qs-brand-navbar-dark: #000;
+  --qs-application-navbar: #4200db;
+  --qs-application-navbar-foreground: #fff;
+  --qs-application-navbar-light: #e8e6ff;
+  --qs-application-navbar-dark: #35009e;
+  --qs-dimension: #4200db;
+  --qs-dimension-foreground: #fff;
+  --qs-dimension-experimental: #4200db;
+  --qs-dimension-experimental-foreground: #4200db;
+  --qs-measure: #00802f;
+  --qs-measure-foreground: #fff;
+  --qs-measure-experimental: #f2b100;
+  --qs-measure-experimental-foreground: #f2b100;
+  --qs-content-inverse: #333843;
+  --qs-content-inverse-active: #131920;
+  --qs-secondary: #dedee3;
+  --qs-disabled: #8c8c94;
+  --qs-divider-light: #f3f3f7;
+  --qs-hover-border: #333843;
+  --qs-active-border: #4200db;
+  --qs-disabled-border: #dedee3;
+  --qs-error-border: #ffe0e0;
+  --qs-error-active-border: #db0000;
+  --qs-disabled-foreground: #b4b4bb;
+  --qs-primary-inverse-foreground: #fff;
+  --qs-error-foreground: #db0000;
+  --qs-contrast-foreground: #131920;
+  --qs-main-foreground: #131920;
+  --qs-action-disabled: #f3f3f7;
+  --qs-action-active: #e8e6ff;
+  --qs-default-badge: #b4b4bb;
+  --qs-tag-default: #dedee3;
+  --qs-tag-soft-border: #b4b4bb;
+  --qs-focus-offset: 1px;
+  --qs-toggle-tile-sm: calc(.25rem * 8);
+  --qs-toggle-tile-md: calc(.25rem * 12);
+  --qs-toggle-tile-lg: calc(.25rem * 15);
+  --qs-shadow-pin-right: inset 4px 0 4px -4px #00000029;
+  --qs-shadow-pin-left: inset -4px 0 4px -4px #00000029;
+  --react-pdf-text-layer: 1;
+  --highlight-bg-color: rgba(180, 0, 170, 1);
+  --highlight-selected-bg-color: rgba(0, 100, 0, 1);
+  --react-pdf-annotation-layer: 1;
+  --annotation-unfocused-field-background: url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+  --input-focus-border-color: Highlight;
+  --input-focus-outline: 1px solid Canvas;
+  --input-unfocused-border-color: transparent;
+  --input-disabled-border-color: transparent;
+  --input-hover-border-color: black;
+  --link-outline: none;
+  color-scheme: light;
+}
+body { background: var(--color-bg); color: var(--color-text); }
+a { color: var(--color-link, var(--color-primary)); }</style>
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/highcharts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/modules/heatmap.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/modules/accessibility.js"></script>
+<style>
+body { background: var(--color-bg); margin: 0; padding: 18px; font-family: var(--font-sans); color: var(--color-text); }
+h1 { font-size: 19px; font-weight: 700; margin: 0 0 3px 0; }
+.subtitle { color: var(--color-text-muted); font-size: 11px; margin-bottom: 16px; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 9px; margin-bottom: 16px; }
+.kpi { background: var(--color-bg-secondary); border: 1px solid var(--color-border-light); border-radius: 7px; padding: 10px 12px; }
+.kpi-label { color: var(--color-text-muted); font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; }
+.kpi-val { font-size: 18px; font-weight: 700; font-family: var(--font-mono); margin-top: 2px; }
+.kpi-sub { font-size: 9px; color: var(--color-text-secondary); margin-top: 1px; }
+.green { color: var(--color-success); }
+.red { color: var(--color-error); }
+.orange { color: var(--color-warning); }
+.section-title { font-size: 13px; font-weight: 600; margin: 16px 0 7px 0; }
+.badge { background: var(--color-primary); color: #fff; padding: 2px 6px; border-radius: 100px; font-size: 8px; font-weight: 500; margin-left: 6px; }
+.badge-red { background: var(--color-error); }
+.card { background: var(--color-bg-secondary); border: 1px solid var(--color-border-light); border-radius: 7px; padding: 12px; margin-bottom: 12px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+table { width: 100%; border-collapse: collapse; font-size: 10px; }
+th { text-align: left; color: var(--color-text-muted); font-weight: 500; padding: 4px 6px; border-bottom: 1px solid var(--color-border); font-size: 8px; text-transform: uppercase; }
+td { padding: 4px 6px; border-bottom: 1px solid var(--color-border-light); font-family: var(--font-mono); font-size: 10px; }
+.tag { display: inline-block; padding: 1px 5px; border-radius: 100px; font-size: 8px; font-weight: 600; }
+.tag-red { background: #ffebe6; color: var(--color-error); }
+.tag-green { background: #e3fcef; color: var(--color-success); }
+.tag-orange { background: #fff3e0; color: var(--color-warning); }
+.insight { background: var(--color-bg-secondary); border-left: 3px solid var(--color-warning); border-radius: 4px; padding: 8px 11px; margin-bottom: 7px; font-size: 11px; line-height: 1.4; }
+.insight-red { border-left-color: var(--color-error); }
+.insight-green { border-left-color: var(--color-success); }
+.insight strong { color: var(--color-text); }
+.scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>AHT Deep Dive — May 2026 (Week 19-22)</h1>
+<p class="subtitle">52,184 transitions · 73 associates · 12 case queues · Amazon Controllable: PA, CC, RO, MC, WP, UN, FC | Non-Amazon: PM, PC, PF, RS</p>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-label">Total Transitions</div><div class="kpi-val">52,184</div><div class="kpi-sub">May 3–29</div></div>
+  <div class="kpi"><div class="kpi-label">Overall Avg AHT</div><div class="kpi-val">6.0 hrs</div><div class="kpi-sub">Median: 7.9 mins</div></div>
+  <div class="kpi"><div class="kpi-label">WP Compliance</div><div class="kpi-val red">6.5%</div><div class="kpi-sub">2,089 →WP / 32,269 worked</div></div>
+  <div class="kpi"><div class="kpi-label">W19→W22 Trend</div><div class="kpi-val green">↓ 21%</div><div class="kpi-sub">6.8 → 5.4 hrs (Overall)</div></div>
+  <div class="kpi"><div class="kpi-label">Re-opens (RS→X)</div><div class="kpi-val orange">248</div><div class="kpi-sub">Avg 26.2 hrs rework</div></div>
+</div>
+
+<div class="section-title">1. Queue × Bucket Heatmap — AHT Contribution %<span class="badge">All 12 Queues × All Buckets</span></div>
+<div class="card"><div id="chart-heatmap" style="height: 380px;"></div></div>
+
+<div class="section-title">2. Case Queue Breakdown — Top AHT Drivers per Queue</div>
+<div class="card scroll">
+  <table>
+    <thead><tr><th>Queue</th><th>Cases</th><th>Avg AHT</th><th>#1 AHT Driver</th><th>Contrib%</th><th>#2 Driver</th><th>Contrib%</th><th>#3 Driver</th><th>Contrib%</th></tr></thead>
+    <tbody>
+      <tr><td>missed-pickup</td><td>26,885</td><td>3.8 hrs</td><td><span class="tag tag-red">PC</span> 13.3 hrs</td><td>51.5%</td><td><span class="tag tag-green">WP</span> 1.9 hrs</td><td>17.5%</td><td><span class="tag tag-red">PM</span> 17.1 hrs</td><td>13.0%</td></tr>
+      <tr><td>freight-redirect</td><td>5,956</td><td>5.6 hrs</td><td><span class="tag tag-red">PF</span> 44.5 hrs</td><td>37.1%</td><td><span class="tag tag-orange">PA</span> 5.2 hrs</td><td>20.0%</td><td><span class="tag tag-green">WP</span> 2.8 hrs</td><td>14.9%</td></tr>
+      <tr><td>po-issues</td><td>5,173</td><td>5.4 hrs</td><td><span class="tag tag-red">PC</span> 28.5 hrs</td><td>60.0%</td><td><span class="tag tag-orange">CC</span> 38.1 hrs</td><td>20.8%</td><td><span class="tag tag-orange">RO</span> 47.1 hrs</td><td>13.2%</td></tr>
+      <tr><td>scheduling</td><td>4,522</td><td>13.6 hrs</td><td><span class="tag tag-orange">PA</span> 67.0 hrs</td><td>36.5%</td><td><span class="tag tag-red">PF</span> 54.3 hrs</td><td>18.9%</td><td><span class="tag tag-red">PC</span> 42.1 hrs</td><td>13.4%</td></tr>
+      <tr><td>pod-requests</td><td>4,033</td><td>1.8 hrs</td><td><span class="tag tag-red">PC</span> 66.5 hrs</td><td>35.6%</td><td><span class="tag tag-orange">RO</span> 13.9 hrs</td><td>28.4%</td><td><span class="tag tag-green">UN</span> 0.8 hrs</td><td>21.3%</td></tr>
+      <tr><td>3p-safety</td><td>3,539</td><td>11.4 hrs</td><td><span class="tag tag-red">PF</span> 42.6 hrs</td><td>52.2%</td><td><span class="tag tag-red">PC</span> 50.4 hrs</td><td>17.1%</td><td><span class="tag tag-green">UN</span> 2.7 hrs</td><td>10.7%</td></tr>
+      <tr><td>3p-other-issues</td><td>1,622</td><td>21.4 hrs</td><td><span class="tag tag-red">PF</span> 74.4 hrs</td><td>33.0%</td><td><span class="tag tag-red">PC</span> 111.5 hrs</td><td>29.6%</td><td><span class="tag tag-orange">PA</span> 33.5 hrs</td><td>10.2%</td></tr>
+      <tr><td>isa-issue</td><td>193</td><td>7.1 hrs</td><td><span class="tag tag-orange">PA</span> 13.3 hrs</td><td>44.5%</td><td><span class="tag tag-red">PF</span> 76.3 hrs</td><td>22.2%</td><td><span class="tag tag-red">PC</span> 18.9 hrs</td><td>19.2%</td></tr>
+      <tr><td>imports</td><td>134</td><td>8.8 hrs</td><td><span class="tag tag-orange">PA</span> 15.8 hrs</td><td>64.6%</td><td><span class="tag tag-red">RS</span> 57.7 hrs</td><td>14.8%</td><td><span class="tag tag-red">PF</span> 120.3 hrs</td><td>10.3%</td></tr>
+      <tr><td>gm-po-issues</td><td>62</td><td>8.0 hrs</td><td><span class="tag tag-orange">PA</span> 24.5 hrs</td><td>59.0%</td><td><span class="tag tag-orange">RO</span> 15.4 hrs</td><td>18.6%</td><td><span class="tag tag-orange">CC</span> 39.4 hrs</td><td>7.9%</td></tr>
+      <tr><td>3p-damages</td><td>57</td><td>18.1 hrs</td><td><span class="tag tag-red">PF</span> 54.9 hrs</td><td>32.0%</td><td><span class="tag tag-green">UN</span> 9.4 hrs</td><td>21.8%</td><td><span class="tag tag-orange">FC</span> 80.5 hrs</td><td>15.6%</td></tr>
+      <tr><td>import-refusals</td><td>8</td><td>0.2 hrs</td><td><span class="tag tag-orange">PA</span> 1.5 hrs</td><td>83.7%</td><td><span class="tag tag-red">PC</span> 0.2 hrs</td><td>10.7%</td><td><span class="tag tag-green">WP</span> 0.0 hrs</td><td>4.4%</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size:9px; color:var(--color-text-muted); margin-top:5px;">🟥 Non-Amazon Controllable (PF, PC, PM, RS) &nbsp; 🟧 Amazon Controllable (PA, CC, RO, FC) &nbsp; 🟩 Expected flow (WP, UN)</div>
+</div>
+
+<div class="section-title">3. Bucket Impact — Volume % vs AHT Contribution %<span class="badge">Mismatch = Problem Buckets</span></div>
+<div class="card"><div id="chart-bucket-mismatch" style="height: 270px;"></div></div>
+
+<div class="section-title">4. WP Compliance — All Associates<span class="badge badge-red">Overall: 6.5% | 9 agents at 0%</span></div>
+<div class="card scroll" style="max-height: 500px; overflow-y: auto;">
+  <div style="font-size:10px; margin-bottom:6px; color:var(--color-text-secondary);"><strong>WP Compliance %</strong> = (Times agent moved case →WP) / (Total times agent worked on cases) × 100</div>
+  <table id="wp-table">
+    <thead><tr><th>#</th><th>Agent</th><th>Total Cases Worked</th><th>Cases Moved →WP</th><th>WP Compliance %</th><th>Status</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section-title">5. Key Findings &amp; Recommendations</div>
+
+<div class="insight insight-red"><strong>🚨 PC (Pending Carrier) = 9.8% volume but 31.8% of total AHT.</strong> #1 driver for missed-pickup (51.5%), po-issues (60%), pod-requests (35.6%), 3p-other-issues (29.6%). Carrier response times are the biggest AHT inflator across queues.</div>
+
+<div class="insight insight-red"><strong>🚨 PF (Pending FC Action) = 2.3% volume but 18.6% of total AHT.</strong> Dominates 3p-safety (52.2%), freight-redirect (37.1%), 3p-other-issues (33%), 3p-damages (32%). FC turnaround is critically slow.</div>
+
+<div class="insight"><strong>⚠️ PA (Pending Amazon Action) = Amazon-controllable but 13.4% of AHT.</strong> This is within our control. Scheduling queue PA = 67 hrs avg. Also drives imports (64.6%), gm-po-issues (59%), isa-issue (44.5%).</div>
+
+<div class="insight"><strong>⚠️ WP Compliance extremely low at 6.5%.</strong> 9 agents have 0% WP compliance. Top-volume agents with low compliance: imadaba (568 cases, 0.4%), saidherj (740 cases, 4.6%), pkram (742 cases, 3.2%). Associates are not moving cases to WP while working on them.</div>
+
+<div class="insight"><strong>⚠️ 248 cases re-opened from Resolved.</strong> Top agents: pkram (20), gareddyj (17), nrsraj (15), imadaba (15). Premature closures causing 26.2 hrs avg rework per re-open.</div>
+
+<div class="insight insight-green"><strong>✅ Weekly AHT improving: W19 (6.8 hrs) → W22 (5.4 hrs) = ↓21% with volume increasing 43%.</strong></div>
+
+<script>
+const s = getComputedStyle(document.documentElement);
+const get = v => s.getPropertyValue(v).trim() || null;
+const text = get('--color-text-secondary') || '#44546f';
+const muted = get('--color-text-muted') || '#8993a4';
+const gridC = get('--color-border-light') || '#ebecf0';
+const primary = get('--color-primary') || '#0052CC';
+const success = get('--color-success') || '#36b37e';
+const error = get('--color-error') || '#de350b';
+const warning = get('--color-warning') || '#ff991f';
+const base = {
+  chart: { backgroundColor: 'transparent', style: { fontFamily: get('--font-sans') || 'system-ui' } },
+  title: { style: { color: get('--color-text') || '#172b4d', fontSize: '12px', fontWeight: '600' } },
+  xAxis: { labels: { style: { color: text, fontSize: '9px' } }, lineColor: gridC, tickColor: gridC },
+  yAxis: { labels: { style: { color: text, fontSize: '9px' } }, gridLineColor: gridC, title: { style: { color: muted, fontSize: '9px' } } },
+  legend: { itemStyle: { color: text, fontSize: '9px' } },
+  tooltip: { backgroundColor: get('--color-surface') || '#fff', borderColor: get('--color-border') || '#dfe1e6', style: { color: get('--color-text') || '#172b4d', fontSize: '11px' } },
+  credits: { enabled: false }
+};
+
+// 1. Heatmap
+const queues = ['missed-pickup','freight-redirect','po-issues','scheduling','pod-requests','3p-safety','3p-other-issues','isa-issue','imports','gm-po-issues','3p-damages','import-refusals'];
+const buckets = ['PF','PC','PA','RO','CC','FC','PM','UN','WP'];
+const hd = [[0,0,0.2],[1,0,51.5],[2,0,4.6],[3,0,6.1],[4,0,1.7],[5,0,0.1],[6,0,13.0],[7,0,2.5],[8,0,17.5],[0,1,37.1],[1,1,4.0],[2,1,20.0],[3,1,0.6],[4,1,0.6],[5,1,1.7],[6,1,0],[7,1,11.8],[8,1,14.9],[0,2,0.2],[1,2,60.0],[2,2,0.2],[3,2,13.2],[4,2,20.8],[5,2,0],[6,2,0],[7,2,3.6],[8,2,1.8],[0,3,18.9],[1,3,13.4],[2,3,36.5],[3,3,13.3],[4,3,7.2],[5,3,3.4],[6,3,0.1],[7,3,6.8],[8,3,0.2],[0,4,2.9],[1,4,35.6],[2,4,4.9],[3,4,28.4],[4,4,5.6],[5,4,0],[6,4,0],[7,4,21.3],[8,4,1.1],[0,5,52.2],[1,5,17.1],[2,5,5.4],[3,5,3.1],[4,5,2.9],[5,5,5.1],[6,5,0.1],[7,5,10.7],[8,5,0.3],[0,6,33.0],[1,6,29.6],[2,6,10.2],[3,6,3.4],[4,6,3.6],[5,6,9.2],[6,6,0.7],[7,6,4.9],[8,6,0.4],[0,7,22.2],[1,7,19.2],[2,7,44.5],[3,7,6.7],[4,7,0],[5,7,0],[6,7,0],[7,7,6.6],[8,7,0.3],[0,8,10.3],[1,8,0.1],[2,8,64.6],[3,8,0],[4,8,0],[5,8,0],[6,8,0],[7,8,10.2],[8,8,0.1],[0,9,0],[1,9,7.8],[2,9,59.0],[3,9,18.6],[4,9,7.9],[5,9,0],[6,9,0],[7,9,6.3],[8,9,0.4],[0,10,32.0],[1,10,1.5],[2,10,10.1],[3,10,3.5],[4,10,15.4],[5,10,15.6],[6,10,0],[7,10,21.8],[8,10,0.1],[0,11,0],[1,11,10.7],[2,11,83.7],[3,11,0],[4,11,0],[5,11,0],[6,11,0],[7,11,1.3],[8,11,4.4]];
+
+Highcharts.chart('chart-heatmap', Highcharts.merge(base, {
+  chart: { type: 'heatmap', backgroundColor: 'transparent', marginBottom: 80 },
+  title: { text: 'AHT Contribution % — Which Bucket Drives Each Queue\'s AHT' },
+  xAxis: { categories: buckets, title: { text: 'FROM Bucket', style: { fontSize: '9px' } } },
+  yAxis: { categories: queues, title: null, reversed: true },
+  colorAxis: { min: 0, max: 65, stops: [[0,'#f8fafc'],[0.05,'#dbeafe'],[0.15,'#93c5fd'],[0.3,'#f59e0b'],[0.5,'#ef4444'],[1,'#7f1d1d']], labels: { style: { fontSize: '9px' } } },
+  legend: { align: 'right', layout: 'vertical', verticalAlign: 'middle', width: 60, symbolHeight: 200 },
+  tooltip: { formatter: function(){ return '<b>'+queues[this.point.y]+'</b> × <b>'+buckets[this.point.x]+'</b><br>AHT Contribution: <b>'+this.point.value+'%</b>'; } },
+  series: [{ name: 'AHT %', data: hd, borderWidth: 1, borderColor: '#fff',
+    dataLabels: { enabled: true, formatter: function(){ return this.point.value >= 5 ? this.point.value+'%' : ''; }, style: { fontSize: '8px', textOutline: 'none', color: '#333' } }
+  }]
+}));
+
+// 3. Bucket Mismatch
+Highcharts.chart('chart-bucket-mismatch', Highcharts.merge(base, {
+  chart: { type: 'bar', backgroundColor: 'transparent' },
+  title: { text: 'Bucket Volume % vs AHT Contribution % — Gap = Problem' },
+  xAxis: { categories: ['PC','PF','PA','WP','RO','UN','CC','PM','FC','RS','MC'] },
+  yAxis: { title: { text: '%' }, max: 40 },
+  tooltip: { shared: true, valueSuffix: '%' },
+  plotOptions: { bar: { borderRadius: 2, groupPadding: 0.15 } },
+  legend: { enabled: true },
+  series: [{
+    name: 'Volume %', color: '#93c5fd',
+    data: [9.8, 2.3, 4.7, 34.8, 3.5, 34.5, 7.1, 1.5, 0.3, 0.5, 1.1]
+  }, {
+    name: 'AHT Contribution %', color: error,
+    data: [31.8, 18.6, 13.4, 7.6, 7.4, 6.3, 4.9, 4.4, 2.6, 2.1, 1.0]
+  }]
+}));
+
+// 4. WP Table
+const wpData = [
+  ['akhilmay',6,0,0.0],['allraje',72,0,0.0],['gsprichi',93,0,0.0],['dpsandy',16,0,0.0],['jaarpita',167,0,0.0],['rohinisr',32,0,0.0],['srikanoj',17,0,0.0],['ranivara',16,0,0.0],['vishperk',50,0,0.0],
+  ['imadaba',568,2,0.4],['sivakric',368,2,0.5],['sdishani',289,2,0.7],['kandsudh',369,3,0.8],['adhatrow',129,1,0.8],['kridavu',101,1,1.0],['prkonalk',194,2,1.0],['suymahes',499,5,1.0],['sadalmah',196,2,1.0],['udaykaki',484,5,1.0],['gareddyj',223,3,1.3],['sohailkn',143,2,1.4],['lagiddiv',503,7,1.4],['chalvadh',488,7,1.4],['morigm',409,6,1.5],['mukkumg',310,5,1.6],['rahangpr',439,7,1.6],['gnanreba',235,4,1.7],['aleemmdu',777,14,1.8],['yasaswid',389,7,1.8],['deeksj',701,13,1.9],['xmanasak',472,10,2.1],['cdamini',458,10,2.2],['yavenka',221,5,2.3],['tejkuchc',526,12,2.3],['bandelab',132,3,2.3],['yadavxal',545,13,2.4],['kavyapvs',36,1,2.8],['pkram',742,24,3.2],['irajeevi',362,12,3.3],['goutbomm',86,3,3.5],['saidherj',740,34,4.6],['sudeesou',125,6,4.8],['usmanmxx',142,7,4.9],['rajesbno',246,12,4.9],['ymkaruna',37,2,5.4],['vidyasre',463,26,5.6],['bujalson',693,41,5.9],['mcabdulw',873,56,6.4],['ramyaval',743,48,6.5],['gmedidha',971,66,6.8],['nrsraj',1315,99,7.5],['bhanumc',335,25,7.5],['yampally',933,72,7.7],['nandhooo',102,8,7.8],['dhawanvl',1223,97,7.9],['ksaikus',109,9,8.3],['nvvippar',1345,117,8.7],['akodhshw',1211,116,9.6],['cdkarana',130,13,10.0],['jyobudat',1149,126,11.0],['sailajes',1246,139,11.2],['nambuj',88,10,11.4],['zfaisalm',898,102,11.4],['hazimraf',943,108,11.5],['kudikya',1036,123,11.9],['deekurre',75,9,12.0],['amgutti',1038,129,12.4],['mahego',8,1,12.5],['cnprave',906,118,13.0],['owaisreh',428,57,13.3],['faizmhf',838,117,14.0],['jusamree',14,2,14.3],['dagadev',3,1,33.3]
+];
+const tbody = document.querySelector('#wp-table tbody');
+wpData.forEach((r,i) => {
+  const wp = r[3];
+  let tag = '<span class="tag tag-red">Poor (&lt;3%)</span>';
+  if (wp >= 10) tag = '<span class="tag tag-green">Good (≥10%)</span>';
+  else if (wp >= 5) tag = '<span class="tag tag-orange">Low (5-10%)</span>';
+  else if (wp >= 3) tag = '<span class="tag tag-orange">Very Low (3-5%)</span>';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${i+1}</td><td>${r[0]}</td><td>${r[1].toLocaleString()}</td><td>${r[2]}</td><td>${r[3]}%</td><td>${tag}</td>`;
+  tbody.appendChild(tr);
+});
+</script>
+
+</body></html>
