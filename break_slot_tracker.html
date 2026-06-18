@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><style id="qw-theme">:root {
   --color-bg: #faf9fc;
-  --color-text: #1a1a1a;
+  --color-text: #131920;
   --color-navbar-bg: #f9f9fb;
   --color-bg-chat-view: #fcfcfd;
   --color-bg-secondary: #ffffff;
@@ -44,6 +44,7 @@
   --color-primary-gradient-end: #e8e6ff;
   --color-primary-bg-solid: #e8e6ff;
   --color-user-bubble: #F3F3F7;
+  --color-user-bubble-text: #131920;
   --color-text-secondary: #5e5e5e;
   --color-text-tertiary: #656871;
   --color-text-muted: #9ca3af;
@@ -114,6 +115,17 @@
   --text-3xl: 1.25rem;
   --text-4xl: 1.5rem;
   --text-5xl: 2rem;
+  --spacing-1: calc(.25rem * 1);
+  --spacing-1-5: calc(.25rem * 1.5);
+  --spacing-2: calc(.25rem * 2);
+  --spacing-3: calc(.25rem * 3);
+  --spacing-4: calc(.25rem * 4);
+  --spacing-5: calc(.25rem * 5);
+  --spacing-6: calc(.25rem * 6);
+  --spacing-7: calc(.25rem * 7);
+  --spacing-8: calc(.25rem * 8);
+  --spacing-9: calc(.25rem * 9);
+  --spacing-10: calc(.25rem * 10);
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-card: 12px;
@@ -301,9 +313,10 @@
   --qs-error-foreground: #db0000;
   --qs-contrast-foreground: #131920;
   --qs-main-foreground: #131920;
+  --qs-main-secondary-foreground: #656871;
   --qs-action-disabled: #f3f3f7;
   --qs-action-active: #e8e6ff;
-  --qs-default-badge: #b4b4bb;
+  --qs-default-badge: #dedee3;
   --qs-tag-default: #dedee3;
   --qs-tag-soft-border: #b4b4bb;
   --qs-focus-offset: 1px;
@@ -394,6 +407,13 @@ a { color: var(--color-link, var(--color-primary)); }</style>
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 12px; margin-bottom: 30px;
         }
+        .shift-select-btn {
+            padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: #a0aec0; font-size: 12px;
+            cursor: pointer; font-weight: 600; transition: all 0.2s;
+        }
+        .shift-select-btn:hover { background: rgba(99,179,237,0.15); color: #63b3ed; border-color: #63b3ed; }
+        .shift-select-btn.active-shift { background: #3182ce; color: #fff; border-color: #3182ce; }
         .slot-card {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -534,9 +554,14 @@ a { color: var(--color-link, var(--color-primary)); }</style>
     <div class="container">
         <div class="header">
             <h1>Break Slot Tracker</h1>
-            <p>ROC-NA Intermodal | Shift: 04:00 AM – 01:00 PM</p>
+            
             <div class="shift-info">
-                <div class="shift-badge">Slots: <span>05:00 AM – 12:00 PM</span></div>
+                <div class="shift-badge" style="display:flex;gap:8px;align-items:center;">
+                    Shift:
+                    <button id="shiftBtnS1" class="shift-select-btn active-shift" onclick="switchShift('S1')">Shift 1 (12PM-9PM)</button>
+                    <button id="shiftBtnS3" class="shift-select-btn" onclick="switchShift('S3')">Shift 3 (4AM-1PM)</button>
+                </div>
+                <div class="shift-badge">Slots: <span id="shiftSlotsInfo">01:00 PM – 08:00 PM</span></div>
                 <div class="shift-badge">Duration: <span>15 min each</span></div>
                 <div class="shift-badge">Max/Slot: <span>4 associates</span></div>
             </div>
@@ -626,19 +651,6 @@ a { color: var(--color-link, var(--color-primary)); }</style>
         var GITHUB_DATA_FILE = 'breaks_' + (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })() + '.json';
 
 // ============ GENERATE SLOTS ============
-        var SLOTS = [];
-        (function() {
-            var hour = 5, min = 0;
-            while (hour < 12) {
-                var startH = hour, startM = min;
-                var endMin = min + 15, endH = hour;
-                if (endMin >= 60) { endMin = endMin - 60; endH = hour + 1; }
-                SLOTS.push({ id: "slot_" + startH + "_" + startM, label: formatTime(startH, startM) + " - " + formatTime(endH, endMin) });
-                min = min + 15;
-                if (min >= 60) { min = min - 60; hour = hour + 1; }
-            }
-        })();
-
         function formatTime(h, m) {
             var period = h >= 12 ? "PM" : "AM";
             var displayH = h > 12 ? h - 12 : h;
@@ -646,11 +658,61 @@ a { color: var(--color-link, var(--color-primary)); }</style>
             return displayH + ":" + (m < 10 ? "0" : "") + m + " " + period;
         }
 
+        var SLOTS = [];
+        var ALL_SLOTS_S1 = []; // Shift 1: 5 AM - 12 PM
+        var ALL_SLOTS_S3 = []; // Shift 3: 1 PM - 8 PM
+        var currentShift = 'S1'; // Default
+
+        (function() {
+            // Generate Shift 1 slots: 5:00 AM - 12:00 PM
+            var hour = 5, min = 0;
+            while (hour < 12) {
+                var startH = hour, startM = min;
+                var endMin = min + 15, endH = hour;
+                if (endMin >= 60) { endMin = endMin - 60; endH = hour + 1; }
+                ALL_SLOTS_S1.push({ id: "s1_slot_" + startH + "_" + startM, label: formatTime(startH, startM) + " - " + formatTime(endH, endMin) });
+                min = min + 15;
+                if (min >= 60) { min = min - 60; hour = hour + 1; }
+            }
+            // Generate Shift 3 slots: 1:00 PM - 8:00 PM
+            hour = 13; min = 0;
+            while (hour < 20) {
+                var startH = hour, startM = min;
+                var endMin = min + 15, endH = hour;
+                if (endMin >= 60) { endMin = endMin - 60; endH = hour + 1; }
+                ALL_SLOTS_S3.push({ id: "s3_slot_" + startH + "_" + startM, label: formatTime(startH, startM) + " - " + formatTime(endH, endMin) });
+                min = min + 15;
+                if (min >= 60) { min = min - 60; hour = hour + 1; }
+            }
+            // Default to Shift 1
+            SLOTS = ALL_SLOTS_S3;
+        })();
+
+        function switchShift(shift) {
+            currentShift = shift;
+            if (shift === 'S1') {
+                SLOTS = ALL_SLOTS_S3;
+                document.getElementById('shiftBtnS1').classList.add('active-shift');
+                document.getElementById('shiftBtnS3').classList.remove('active-shift');
+                document.getElementById('shiftSlotsInfo').textContent = '01:00 PM – 08:00 PM';
+            } else {
+                SLOTS = ALL_SLOTS_S1;
+                document.getElementById('shiftBtnS3').classList.add('active-shift');
+                document.getElementById('shiftBtnS1').classList.remove('active-shift');
+                document.getElementById('shiftSlotsInfo').textContent = '05:00 AM – 12:00 PM';
+            }
+            loadBookingsFromSP().then(function() { renderSlots(); });
+        }
+
+        
+
         // ============ STATE ============
         var currentUser = "";
         var bookings = {}; // slotId -> [array of login IDs]
         var bookingLog = []; // [{user, slotLabel, date, bookedAt}]
         var spConnected = false;
+        var useMemStore = false;
+        var memStore = {};
 
         // ============ DATE HELPERS ============
         function getTodayKey() {
@@ -666,7 +728,7 @@ a { color: var(--color-link, var(--color-primary)); }</style>
         function loadBookingsFromSP() {
             // Load from GitHub (raw URL) instead of SharePoint
             var dateKey = getTodayKey();
-            var fileUrl = GITHUB_RAW_BASE + 'breaks_' + dateKey + '.json?t=' + Date.now();
+            var fileUrl = GITHUB_RAW_BASE + 'breaks_' + dateKey + '_' + currentShift + '.json?t=' + Date.now();
             
             return fetch(fileUrl)
             .then(function(r) {
@@ -724,7 +786,7 @@ a { color: var(--color-link, var(--color-primary)); }</style>
             var fileInput = document.createElement('input');
             fileInput.type = 'hidden';
             fileInput.name = 'filename';
-            fileInput.value = 'breaks_' + dateKey + '.json';
+            fileInput.value = 'breaks_' + dateKey + '_' + currentShift + '.json';
             form.appendChild(fileInput);
             
             document.body.appendChild(form);
@@ -1073,7 +1135,7 @@ a { color: var(--color-link, var(--color-primary)); }</style>
         // Auto-refresh from GitHub every 30 seconds to catch other users' bookings
         setInterval(function() {
             if (currentUser) {
-                var fileUrl = GITHUB_RAW_BASE + 'breaks_' + getTodayKey() + '.json?t=' + Date.now();
+                var fileUrl = GITHUB_RAW_BASE + 'breaks_' + getTodayKey() + '_' + currentShift + '.json?t=' + Date.now();
                 fetch(fileUrl)
                 .then(function(r) { if (r.ok) return r.json(); throw new Error('no data'); })
                 .then(function(data) {
