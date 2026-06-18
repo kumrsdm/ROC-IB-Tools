@@ -1105,6 +1105,17 @@ a { color: var(--color-link, var(--color-primary)); }</style>
                 }
             }
 
+            // Check max 4 slots (1 hour) per associate per day
+            var userTotalSlots = 0;
+            Object.keys(bookings).forEach(function(key) {
+                for (var j = 0; j < bookings[key].length; j++) {
+                    if (bookings[key][j] === currentUser) userTotalSlots++;
+                }
+            });
+            if (userTotalSlots >= 4) {
+                showToast("You've already booked 4 slots (1 hour max per day)!", true); return;
+            }
+
             btnElem.disabled = true;
             btnElem.innerHTML = '<span class="spinner"></span>Booking...';
 
