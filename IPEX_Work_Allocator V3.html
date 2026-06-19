@@ -518,7 +518,7 @@ h+='<button onclick="removeOT('+i+')" style="border:none;background:none;color:#
 document.getElementById('otList').innerHTML=h;
 }
 
-var TASKS={monitoring:{title:'Monitoring Queues',color:'#1e5c3a',icon:'📡',group:'SKED',tasks:[{name:'Chat Queue Monitoring / Sync up MoM / Hand Over Call'},{name:'Chime/Slack Rooms Monitoring',allPocs:true},{name:'Cases SOS & EOS'},{name:'Res Coca-Cola Monitoring',ownershipFilter:'Res-Coco'},{name:'Network Health Monitoring / Pushouts'},{name:'Cases SL and Mails Check'},{name:'Planned/Unplanned Closures / Closure Slack Channel'},{name:'Triggers check'}]},sked:{title:'SKED & AM — Case Queues',color:'#2d3561',icon:'📋',group:'SKED',tasks:[{name:'GL Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'SKED/AM Cases / PO Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'DFM Cases',allPocs:true},{name:'IB Scheduling Callout Emails',allPocs:true},{name:'Email Monitoring (roc-iaa/roc-rlb1/roc-vio)',allPocs:true},{name:'Hot Pos (Shared Path)',allPocs:true},{name:'Live-Drop mismatch',allPocs:true},{name:'FMC-DM mismatch',allPocs:true},{name:'LTR ETA visibility for IBTL loads',allPocs:true},{name:'EOD buffer & Scrubbings / AZNG Pullin trigger',allPocs:true},{name:'Cases Backlog Division'},{name:'DWP Division (FMC-DM)'},{name:'DWP Division (LTR-ETA)'},{name:'DWP Division (D2L)'},{name:'DWP Division (C-VRID)'},{name:'Pushout Plan creation'}]},sfc:{title:'SFC',color:'#5c2d5c',icon:'🎫',group:'SFC',tasks:[{name:'SFC Tickets',allPocs:true},{name:'SFC Email Monitoring / Escalation Emails'}]},shiftWash:{title:'Shift Wash',color:'#3d4f1e',icon:'🔄',group:'SKED',tasks:[{name:'Sked SW'},{name:'AM SW'}]},imports:{title:'IMPORTS',color:'#5c1e1e',icon:'🚢',group:'IMPORTS',singlePerson:true,tasks:[{name:'Cases'},{name:'Case SL Check'},{name:'Loads Tendering'},{name:'Contracts creation'},{name:'GM-PO-Issues, NA Imports Accessorial'},{name:'Shift wash'},{name:'Shift wash R4D'}]},ict:{title:'ICT',color:'#1e3d5c',icon:'🌐',group:'ICT',tasks:[{name:'Cases - Redirects and IBWR queues',multi:true},{name:'Case SL Check'},{name:'Sims Execution',multi:true},{name:'IBWR Callout Emails',multi:true},{name:'Shift wash'}]},ait:{title:'AIT',color:'#5c3d1e',icon:'📦',group:'AIT',tasks:[{name:'Missed Pickup Case Queue',allPocs:true}]}};
+var TASKS={monitoring:{title:'Monitoring Queues',color:'#1e5c3a',icon:'📡',group:'SKED',tasks:[{name:'Chat Queue Monitoring / Sync up MoM / Hand Over Call'},{name:'Chime/Slack Rooms Monitoring',allPocs:true},{name:'Cases SOS & EOS'},{name:'Res Coca-Cola Monitoring',ownershipFilter:'Res-Coco'},{name:'Network Health Monitoring / Pushouts'},{name:'Cases SL and Mails Check'},{name:'Planned/Unplanned Closures / Closure Slack Channel'},{name:'Triggers check'}]},sked:{title:'SKED & AM — Case Queues',color:'#2d3561',icon:'📋',group:'SKED',tasks:[{name:'GL Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'SKED/AM Cases / PO Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'DFM Cases',allPocs:true},{name:'IB Scheduling Callout Emails',allPocs:true},{name:'Email Monitoring (roc-iaa/roc-rlb1/roc-vio)',allPocs:true},{name:'Hot Pos (Shared Path)',allPocs:true},{name:'Live-Drop mismatch',allPocs:true},{name:'FMC-DM mismatch',allPocs:true},{name:'LTR ETA visibility for IBTL loads',allPocs:true},{name:'EOD buffer & Scrubbings / AZNG Pullin trigger',allPocs:true},{name:'Cases Backlog Division'},{name:'DWP Division (FMC-DM)',uniqueGroup:'DWP'},{name:'DWP Division (LTR-ETA)',uniqueGroup:'DWP'},{name:'DWP Division (D2L)',uniqueGroup:'DWP'},{name:'DWP Division (C-VRID)',uniqueGroup:'DWP'},{name:'Pushout Plan creation'}]},sfc:{title:'SFC',color:'#5c2d5c',icon:'🎫',group:'SFC',tasks:[{name:'SFC Tickets',allPocs:true},{name:'SFC Email Monitoring / Escalation Emails'}]},shiftWash:{title:'Shift Wash',color:'#3d4f1e',icon:'🔄',group:'SKED',tasks:[{name:'Sked SW'},{name:'AM SW'}]},imports:{title:'IMPORTS',color:'#5c1e1e',icon:'🚢',group:'IMPORTS',singlePerson:true,tasks:[{name:'Cases'},{name:'Case SL Check'},{name:'Loads Tendering'},{name:'Contracts creation'},{name:'GM-PO-Issues, NA Imports Accessorial'},{name:'Shift wash'},{name:'Shift wash R4D'}]},ict:{title:'ICT',color:'#1e3d5c',icon:'🌐',group:'ICT',tasks:[{name:'Cases - Redirects and IBWR queues',multi:true},{name:'Case SL Check'},{name:'Sims Execution',multi:true},{name:'IBWR Callout Emails',multi:true},{name:'Shift wash'}]},ait:{title:'AIT',color:'#5c3d1e',icon:'📦',group:'AIT',tasks:[{name:'Missed Pickup Case Queue',allPocs:true}]}};
 
 // ===== HISTORY FUNCTIONS =====
 function getHistory(){
@@ -732,6 +732,7 @@ document.getElementById('allTaskSections').innerHTML=h;updateWorkload();
 function smartRandomize(){
 var antiMap=buildAntiRepeatMap();
 var globalCounts={};
+var uniqueGroupUsed={};
 var halfDaySet={};
 // Build set of half-day associates from the available pools (already filtered correctly)
 [availableTeam.SKED,availableTeam.SFC,availableTeam.ICT,availableTeam.AIT].forEach(function(team){
@@ -793,12 +794,18 @@ if(hasSKED){return isEvenDay?!isGLTask:isGLTask;}
 return !isGLTask;});
 }
 if(!taskPool.length)return;
+// UniqueGroup: exclude people already assigned to another task in same group
+if(task.uniqueGroup){
+if(!uniqueGroupUsed[task.uniqueGroup])uniqueGroupUsed[task.uniqueGroup]=[];
+taskPool=taskPool.filter(function(login){return uniqueGroupUsed[task.uniqueGroup].indexOf(login)<0;});
+if(!taskPool.length)return;
+}
 if(task.multi){var cnt=Math.min(Math.max(2,Math.floor(taskPool.length/3)),taskPool.length);
 if(task.assignAll)cnt=taskPool.length;
 for(var o=0;o<el.options.length;o++)el.options[o].selected=false;
 var picks=pickMulti(taskPool,cnt,taskKey);
-picks.forEach(function(v){globalCounts[v]=(globalCounts[v]||0)+1;for(var o=0;o<el.options.length;o++){if(el.options[o].value===v)el.options[o].selected=true;}});}
-else{var v=pickOne(taskPool,taskKey);el.value=v;globalCounts[v]=(globalCounts[v]||0)+1;}});});
+picks.forEach(function(v){globalCounts[v]=(globalCounts[v]||0)+1;if(task.uniqueGroup)uniqueGroupUsed[task.uniqueGroup].push(v);for(var o=0;o<el.options.length;o++){if(el.options[o].value===v)el.options[o].selected=true;}});}
+else{var v=pickOne(taskPool,taskKey);el.value=v;globalCounts[v]=(globalCounts[v]||0)+1;if(task.uniqueGroup){if(!uniqueGroupUsed[task.uniqueGroup])uniqueGroupUsed[task.uniqueGroup]=[];uniqueGroupUsed[task.uniqueGroup].push(v);}}});});
 updateWorkload();
 }
 function clearAll(){
@@ -1263,6 +1270,65 @@ function showSyncStatus(msg, type) {
         setTimeout(function() { el.innerHTML = '☁️ Auto-sync enabled'; el.className = 'badge badge-sked'; }, 4000);
     }
 }
+
+// ===== AUTO-LOAD SCHEDULE FROM JSON ON START =====
+(function(){
+try{
+// Try fetch first (works if served via HTTP)
+var loadFn=function(){
+var xhr=new XMLHttpRequest();
+var jsonPath='schedule_data.json';
+// For file:// protocol, construct the path relative to current page
+if(window.location.protocol==='file:'){
+var pagePath=decodeURIComponent(window.location.pathname);
+var folder=pagePath.substring(0,pagePath.lastIndexOf('/'));
+jsonPath=folder+'/schedule_data.json';
+}
+xhr.open('GET',jsonPath,true);
+xhr.onload=function(){
+if(xhr.status===200||xhr.status===0){
+try{
+var data=JSON.parse(xhr.responseText);
+if(!data)return;
+function rowsToTSV(rows){
+if(!rows||!rows.length)return '';
+return rows.map(function(row){return row.join('\t');}).join('\n');
+}
+if(data.SKED_SFC){
+// Split combined SKED_SFC data into SKED and SFC textareas
+var allRows=data.SKED_SFC;
+var skedLines=[],sfcLines=[];
+var currentSec='SKED';
+for(var ri=0;ri<allRows.length;ri++){
+var row=allRows[ri];
+// Check first few columns for section header
+var headerFound=false;
+for(var ci=0;ci<Math.min(3,row.length);ci++){
+var cell=(row[ci]||'').toLowerCase();
+if(/shift\s*\d/.test(cell)){
+if(cell.indexOf('sfc')>=0&&cell.indexOf('sked')<0){currentSec='SFC';headerFound=true;break;}
+else if(cell.indexOf('sked')>=0){currentSec='SKED';headerFound=true;break;}
+}
+}
+if(currentSec==='SFC'){sfcLines.push(row);}else{skedLines.push(row);}
+}
+document.getElementById('scheduleDataSKED').value=rowsToTSV(skedLines);
+if(sfcLines.length>0){document.getElementById('scheduleDataSFC').value=rowsToTSV(sfcLines);}
+}
+if(data.ICT){document.getElementById('scheduleDataICT').value=rowsToTSV(data.ICT);}
+if(data.AIT){document.getElementById('scheduleDataAIT').value=rowsToTSV(data.AIT);}
+document.getElementById('parseResult').innerHTML='<div class="alert alert-success">📁 Schedule auto-loaded from <code>schedule_data.json</code> (exported: '+(data.exportedAt||'unknown')+' by '+(data.exportedBy||'unknown')+'). Click <strong>Parse Schedule</strong> to proceed.</div>';
+document.getElementById('parseResult').classList.remove('hidden');
+}catch(e){console.log('JSON parse error:',e);}
+}
+};
+xhr.onerror=function(){console.log('Could not load schedule_data.json');};
+xhr.send();
+};
+// Small delay to ensure DOM is ready
+setTimeout(loadFn,500);
+}catch(e){console.log('Auto-load error:',e);}
+})();
 
 // ===== AUTO-LOAD HISTORY FROM GITHUB ON START =====
 loadFromGitHub();
