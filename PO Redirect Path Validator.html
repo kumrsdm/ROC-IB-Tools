@@ -1157,6 +1157,7 @@ function validateApp() {
 function checkAppPath(bookedFC, newFC, bookedType, newType, bookedRegion, newRegion) {
   if (!state.appLanes || !state.appLanes.lookup) return { approved: false, reason: 'No APP data' };
   
+  
   const lookup = state.appLanes.lookup;
   
   // Step 1: Normalize the Booked FC type to match APP file format
@@ -1192,6 +1193,24 @@ function checkAppPath(bookedFC, newFC, bookedType, newType, bookedRegion, newReg
     return { approved: false, reason: 'Rejected - Region' };
   }
   
+  // Region normalization: FC Regions tab uses full names (Florida, Greatlakes, etc.)
+  // but APP Lanes USNS section uses abbreviations (FL, GL, MA, etc.)
+  const regionFullToAbbr = {
+    'FLORIDA': 'FL', 'GREATLAKES': 'GL', 'GREAT_LAKES': 'GL', 'GREAT LAKES': 'GL',
+    'MIDATLANTIC': 'MA', 'MID_ATLANTIC': 'MA', 'MID ATLANTIC': 'MA', 'MIDATLANTIC': 'MA',
+    'MIDSOUTH': 'MS', 'MID_SOUTH': 'MS', 'MID SOUTH': 'MS',
+    'MIDWEST': 'MW', 'MID_WEST': 'MW', 'MID WEST': 'MW',
+    'NORTHEAST': 'NE', 'NORTH_EAST': 'NE', 'NORTH EAST': 'NE',
+    'NORTHWEST': 'NW', 'NORTH_WEST': 'NW', 'NORTH WEST': 'NW',
+    'SOUTHWEST': 'SW', 'SOUTH_WEST': 'SW', 'SOUTH WEST': 'SW',
+    'MOUNTAIN': 'MT', 'TEXAS': 'TX'
+  };
+  const regionAbbrToFull = {
+    'FL': 'FLORIDA', 'GL': 'GREATLAKES', 'MA': 'MIDATLANTIC',
+    'MS': 'MIDSOUTH', 'MW': 'MIDWEST', 'NE': 'NORTHEAST',
+    'NW': 'NORTHWEST', 'SW': 'SOUTHWEST', 'MT': 'MOUNTAIN', 'TX': 'TEXAS'
+  };
+  
   // Step 2b: Normalize region names to match APP file conventions
   // FC Regions tab might say "MidAtlantic" but APP file says "MA_NE"
   // APP file IXD regions: Central, East, West, MA_NE, MS_FL, MW_GL, SW_NW, TX_MT
@@ -1199,7 +1218,11 @@ function checkAppPath(bookedFC, newFC, bookedType, newType, bookedRegion, newReg
   // The region from Check tab or FC Regions should already match since they come from the same source
   // But if there's a case mismatch or spacing issue, normalize
   region = region.trim().replace(/\s+/g, '_');
-  // Also try without underscores for matching
+  
+  // Also build normalized variants — map full name to abbreviation and vice versa
+  const abbrRegion = regionFullToAbbr[region.replace(/_/g, '')] || regionFullToAbbr[region] || '';
+  const fullRegion = regionAbbrToFull[region] || '';
+  
   const regionVariants = [region, region.replace(/_/g, ''), region.replace(/_/g, ' ')];
   
   // Step 3: Strict check — TYPE|REGION must have the New FC as an approved taker
@@ -1213,6 +1236,15 @@ function checkAppPath(bookedFC, newFC, bookedType, newType, bookedRegion, newReg
   for (const rv of regionVariants) {
     const altKey = typeKey + '|' + rv;
     if (altKey !== key && lookup[altKey] && lookup[altKey].has(newFC)) {
+      return { approved: true, reason: null };
+    }
+  }
+  
+  // Try abbreviated and full region name variants
+  const extraVariants = [abbrRegion, fullRegion].filter(v => v && v !== region);
+  for (const rv of extraVariants) {
+    const altKey = typeKey + '|' + rv;
+    if (lookup[altKey] && lookup[altKey].has(newFC)) {
       return { approved: true, reason: null };
     }
   }
