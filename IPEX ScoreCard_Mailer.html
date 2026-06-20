@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPEX Score Card - Draft Mail Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh; padding: 20px; color: #e0e0e0;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 10px; font-size: 2em; color: #00d4ff; text-shadow: 0 0 10px rgba(0,212,255,0.3); }
+        .subtitle { text-align: center; margin-bottom: 30px; color: #8892b0; font-size: 0.95em; }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex; justify-content: center; gap: 0; margin-bottom: 30px;
+        }
+        .tab-btn {
+            padding: 14px 50px; border: 2px solid #00d4ff; background: transparent;
+            color: #00d4ff; font-size: 1.1em; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .tab-btn:first-child { border-radius: 8px 0 0 8px; }
+        .tab-btn:last-child { border-radius: 0 8px 8px 0; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #000; border-color: #00d4ff;
+            box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+        }
+        .tab-btn:not(.active):hover {
+            background: rgba(0,212,255,0.1);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .upload-section {
+            background: rgba(255,255,255,0.05); border: 2px dashed #00d4ff; border-radius: 12px;
+            padding: 40px; text-align: center; margin-bottom: 25px; transition: all 0.3s ease; cursor: pointer;
+        }
+        .upload-section:hover { background: rgba(0,212,255,0.05); border-color: #00ff88; }
+        .upload-section input[type="file"] { display: none; }
+        .upload-section label { cursor: pointer; font-size: 1.1em; color: #ccd6f6; }
+        .upload-icon { font-size: 3em; margin-bottom: 10px; display: block; }
+        .config-section {
+            background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: none;
+        }
+        .config-section h3 { color: #00d4ff; margin-bottom: 15px; }
+        .config-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+        .config-row label { min-width: 160px; color: #8892b0; }
+        .config-row select, .config-row input {
+            padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a5e;
+            background: #1a2744; color: #e0e0e0; font-size: 0.9em; min-width: 200px;
+        }
+        .config-row input[type="number"] { min-width: 80px; width: 80px; }
+        .table-container {
+            background: rgba(255,255,255,0.03); border-radius: 12px; overflow: hidden;
+            margin-bottom: 25px; display: none; max-height: 500px; overflow-y: auto;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead { position: sticky; top: 0; z-index: 10; }
+        th { background: #162447; padding: 12px 15px; text-align: left; color: #00d4ff; font-weight: 600; border-bottom: 2px solid #00d4ff; white-space: nowrap; }
+        td { padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
+        tr:hover { background: rgba(0,212,255,0.05); }
+        tr.selected { background: rgba(0,212,255,0.15); }
+        .checkbox-col { width: 40px; text-align: center; }
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #00d4ff; }
+        .actions { display: none; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 25px; }
+        .btn {
+            padding: 12px 30px; border: none; border-radius: 8px; font-size: 1em;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-primary { background: linear-gradient(135deg, #00d4ff, #0099cc); color: #000; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,212,255,0.4); }
+        .btn-secondary { background: linear-gradient(135deg, #00ff88, #00cc6a); color: #000; }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,255,136,0.4); }
+        .btn-danger { background: linear-gradient(135deg, #ff4757, #cc0022); color: #fff; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,71,87,0.4); }
+        .status-bar { text-align: center; padding: 10px; color: #00ff88; font-size: 0.9em; min-height: 40px; }
+        .email-template {
+            background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: none;
+        }
+        .email-template h3 { color: #00d4ff; margin-bottom: 15px; }
+        .email-template textarea {
+            width: 100%; min-height: 200px; padding: 12px; border-radius: 8px;
+            border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0;
+            font-family: 'Consolas', monospace; font-size: 0.9em; resize: vertical; margin-bottom: 10px;
+        }
+        .email-template input {
+            width: 100%; padding: 10px 12px; border-radius: 6px;
+            border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0; font-size: 0.9em; margin-bottom: 10px;
+        }
+        .template-help { color: #8892b0; font-size: 0.8em; margin-top: 5px; }
+        .preview-section {
+            background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: none;
+        }
+        .preview-section h3 { color: #00d4ff; margin-bottom: 15px; }
+        .preview-card {
+            background: #1a2744; border-radius: 8px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #00d4ff;
+        }
+        .preview-card h4 { color: #00ff88; margin-bottom: 8px; }
+        .preview-card .score-table {
+            width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em;
+        }
+        .preview-card .score-table th {
+            background: #0f3460; color: #00d4ff; padding: 10px 12px; text-align: center;
+            border: 1px solid #2a3a5e; font-weight: 600; font-size: 0.85em; white-space: nowrap;
+        }
+        .preview-card .score-table td {
+            padding: 8px 12px; border: 1px solid #2a3a5e; white-space: nowrap;
+            color: #00ff88; text-align: center; font-weight: 500;
+        }
+        .preview-card .section-title {
+            color: #ffa500; font-weight: 600; margin: 15px 0 8px 0; font-size: 1em;
+            border-bottom: 1px solid #ffa500; padding-bottom: 4px;
+        }
+        .preview-card .audit-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+        .preview-card .audit-table th {
+            background: #4a1a1a; color: #ff6b6b; padding: 8px 10px; text-align: left;
+            border: 1px solid #3a2a2a; font-weight: 600; white-space: nowrap;
+        }
+        .preview-card .audit-table td {
+            padding: 6px 10px; border: 1px solid #2a3a5e; color: #e0e0e0; text-align: left;
+        }
+        .mail-body-preview { margin-top: 10px; color: #ccd6f6; line-height: 1.6; }
+        .select-all-row {
+            display: flex; align-items: center; gap: 10px; padding: 10px 15px;
+            background: rgba(0,212,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .file-info { text-align: center; color: #8892b0; font-size: 0.85em; margin-top: 10px; }
+        .detected-cols {
+            background: #1a2744; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 0.85em; color: #ccd6f6;
+        }
+        .detected-cols span { color: #00ff88; font-weight: 600; }
+        .sheet-config-group {
+            background: rgba(0,212,255,0.03); border: 1px solid #2a3a5e; border-radius: 8px;
+            padding: 15px; margin-bottom: 12px;
+        }
+        .sheet-config-group h4 { color: #ffa500; margin-bottom: 10px; font-size: 0.95em; }
+        @media (max-width: 768px) {
+            .config-row { flex-direction: column; align-items: flex-start; }
+            .config-row select, .config-row input { width: 100%; }
+            .tab-btn { padding: 12px 30px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 IPEX Score Card Mailer</h1>
+        <p class="subtitle">Select team → Upload score card → Select associates → Generate draft emails</p>
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('ait')">AIT</button>
+            <button class="tab-btn" onclick="switchTab('ict')">ICT</button>
+        </div>
+
+        <!-- ==================== AIT TAB ==================== -->
+        <div class="tab-content active" id="tab-ait">
+            <div class="upload-section" id="uploadSection-ait">
+                <label for="fileInput-ait">
+                    <span class="upload-icon">📁</span>
+                    <strong>Click to upload AIT Score Card Excel file</strong><br>
+                    <small style="color: #8892b0;">Supports .xlsx, .xls, .csv files (must have Score Card, Connect Report, Audit Errors sheets)</small>
+                </label>
+                <input type="file" id="fileInput-ait" accept=".xlsx,.xls,.csv">
+                <div class="file-info" id="fileInfo-ait"></div>
+            </div>
+
+            <div class="config-section" id="configSection-ait">
+                <h3>⚙️ Configuration</h3>
+                <div class="sheet-config-group">
+                    <h4>📊 Score Card Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="sheetSelect-ait"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="headerRowInput-ait" value="2" min="1" max="20">
+                        <small style="color: #8892b0;">Row with Login, Name, Manager, etc.</small>
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="dataStartRow-ait" value="3" min="2" max="50">
+                    </div>
+                </div>
+                <div class="sheet-config-group">
+                    <h4>📞 Connect Report Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="connectSheetSelect-ait"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="connectHeaderRow-ait" value="1" min="1" max="20">
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="connectDataRow-ait" value="2" min="2" max="50">
+                    </div>
+                </div>
+                <div class="sheet-config-group">
+                    <h4>🔍 Audit Errors Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="auditSheetSelect-ait"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="auditHeaderRow-ait" value="1" min="1" max="20">
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="auditDataRow-ait" value="2" min="2" max="50">
+                    </div>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <button class="btn btn-primary" onclick="detectAndLoad('ait')">🔍 Detect Columns & Load</button>
+                </div>
+                <div class="detected-cols" id="detectedCols-ait" style="display:none;"></div>
+            </div>
+
+            <div class="email-template" id="emailTemplate-ait">
+                <h3>✉️ Email Template</h3>
+                <div class="config-row" style="margin-bottom: 15px;">
+                    <label style="min-width: 140px; color: #8892b0;">Score Card Month:</label>
+                    <select id="monthSelect-ait" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0; font-size: 0.9em;">
+                        <option value="January">January</option><option value="February">February</option>
+                        <option value="March">March</option><option value="April">April</option>
+                        <option value="May">May</option><option value="June">June</option>
+                        <option value="July">July</option><option value="August">August</option>
+                        <option value="September">September</option><option value="October">October</option>
+                        <option value="November">November</option><option value="December">December</option>
+                    </select>
+                </div>
+                <label style="color: #8892b0; font-size: 0.85em;">Subject Line:</label>
+                <input type="text" id="emailSubject-ait" value="Your AIT Score Card for {month} 2026">
+            </div>
+
+            <!-- Manager Filter - AIT -->
+            <div class="config-section" id="managerFilterSection-ait" style="display: none;">
+                <h3>👤 Filter by Manager</h3>
+                <div class="config-row">
+                    <label style="min-width: 140px; color: #8892b0;">Manager:</label>
+                    <select id="managerFilter-ait" onchange="applyManagerFilter('ait')" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0; font-size: 0.9em; min-width: 250px;">
+                        <option value="__all__">All Managers</option>
+                    </select>
+                    <span id="filterCount-ait" style="color: #00ff88; font-size: 0.85em; margin-left: 10px;"></span>
+                </div>
+            </div>
+
+            <div class="table-container" id="tableContainer-ait">
+                <div class="select-all-row">
+                    <input type="checkbox" id="selectAll-ait" onchange="toggleSelectAll('ait')">
+                    <label for="selectAll-ait" style="color: #ccd6f6; cursor: pointer;">Select All</label>
+                    <span id="selectedCount-ait" style="margin-left: auto; color: #00d4ff; font-size: 0.85em;">0 selected</span>
+                </div>
+                <table>
+                    <thead id="tableHead-ait"></thead>
+                    <tbody id="tableBody-ait"></tbody>
+                </table>
+            </div>
+
+            <div class="actions" id="actionButtons-ait">
+                <button class="btn btn-secondary" onclick="generateMails('ait')">📧 Generate Draft Mails</button>
+                <button class="btn btn-primary" onclick="previewMails('ait')">👁️ Preview Mails</button>
+                <button class="btn btn-danger" onclick="resetAll('ait')">🔄 Reset</button>
+            </div>
+
+            <div class="preview-section" id="previewSection-ait">
+                <h3>📋 Mail Preview</h3>
+                <div id="previewContent-ait"></div>
+            </div>
+
+            <div class="status-bar" id="statusBar-ait"></div>
+        </div>
+
+        <!-- ==================== ICT TAB ==================== -->
+        <div class="tab-content" id="tab-ict">
+            <div class="upload-section" id="uploadSection-ict">
+                <label for="fileInput-ict">
+                    <span class="upload-icon">📁</span>
+                    <strong>Click to upload ICT Score Card Excel file</strong><br>
+                    <small style="color: #8892b0;">Supports .xlsx, .xls, .csv files (must have Score Card, Connect Report, Audit Errors sheets)</small>
+                </label>
+                <input type="file" id="fileInput-ict" accept=".xlsx,.xls,.csv">
+                <div class="file-info" id="fileInfo-ict"></div>
+            </div>
+
+            <div class="config-section" id="configSection-ict">
+                <h3>⚙️ Configuration</h3>
+                <div class="sheet-config-group">
+                    <h4>📊 Score Card Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="sheetSelect-ict"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="headerRowInput-ict" value="2" min="1" max="20">
+                        <small style="color: #8892b0;">Row with Login, Name, Manager, etc.</small>
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="dataStartRow-ict" value="3" min="2" max="50">
+                    </div>
+                </div>
+                <div class="sheet-config-group">
+                    <h4>📞 Connect Report Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="connectSheetSelect-ict"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="connectHeaderRow-ict" value="1" min="1" max="20">
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="connectDataRow-ict" value="2" min="2" max="50">
+                    </div>
+                </div>
+                <div class="sheet-config-group">
+                    <h4>🔍 Audit Errors Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="auditSheetSelect-ict"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="auditHeaderRow-ict" value="1" min="1" max="20">
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="auditDataRow-ict" value="2" min="2" max="50">
+                    </div>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <button class="btn btn-primary" onclick="detectAndLoad('ict')">🔍 Detect Columns & Load</button>
+                </div>
+                <div class="detected-cols" id="detectedCols-ict" style="display:none;"></div>
+            </div>
+
+            <div class="email-template" id="emailTemplate-ict">
+                <h3>✉️ Email Template</h3>
+                <div class="config-row" style="margin-bottom: 15px;">
+                    <label style="min-width: 140px; color: #8892b0;">Score Card Month:</label>
+                    <select id="monthSelect-ict" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0; font-size: 0.9em;">
+                        <option value="January">January</option><option value="February">February</option>
+                        <option value="March">March</option><option value="April">April</option>
+                        <option value="May">May</option><option value="June">June</option>
+                        <option value="July">July</option><option value="August">August</option>
+                        <option value="September">September</option><option value="October">October</option>
+                        <option value="November">November</option><option value="December">December</option>
+                    </select>
+                </div>
+                <label style="color: #8892b0; font-size: 0.85em;">Subject Line:</label>
+                <input type="text" id="emailSubject-ict" value="Your ICT Score Card for {month} 2026">
+            </div>
+
+            <!-- Manager Filter - ICT -->
+            <div class="config-section" id="managerFilterSection-ict" style="display: none;">
+                <h3>👤 Filter by Manager</h3>
+                <div class="config-row">
+                    <label style="min-width: 140px; color: #8892b0;">Manager:</label>
+                    <select id="managerFilter-ict" onchange="applyManagerFilter('ict')" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0; font-size: 0.9em; min-width: 250px;">
+                        <option value="__all__">All Managers</option>
+                    </select>
+                    <span id="filterCount-ict" style="color: #00ff88; font-size: 0.85em; margin-left: 10px;"></span>
+                </div>
+            </div>
+
+            <div class="table-container" id="tableContainer-ict">
+                <div class="select-all-row">
+                    <input type="checkbox" id="selectAll-ict" onchange="toggleSelectAll('ict')">
+                    <label for="selectAll-ict" style="color: #ccd6f6; cursor: pointer;">Select All</label>
+                    <span id="selectedCount-ict" style="margin-left: auto; color: #00d4ff; font-size: 0.85em;">0 selected</span>
+                </div>
+                <table>
+                    <thead id="tableHead-ict"></thead>
+                    <tbody id="tableBody-ict"></tbody>
+                </table>
+            </div>
+
+            <div class="actions" id="actionButtons-ict">
+                <button class="btn btn-secondary" onclick="generateMails('ict')">📧 Generate Draft Mails</button>
+                <button class="btn btn-primary" onclick="previewMails('ict')">👁️ Preview Mails</button>
+                <button class="btn btn-danger" onclick="resetAll('ict')">🔄 Reset</button>
+            </div>
+
+            <div class="preview-section" id="previewSection-ict">
+                <h3>📋 Mail Preview</h3>
+                <div id="previewContent-ict"></div>
+            </div>
+
+            <div class="status-bar" id="statusBar-ict"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== STATE PER TAB ==========
+        const state = {
+            ait: { workbook: null, sheetData: [], filteredIndices: [], headers: [], loginColIndex: -1, nameColIndex: -1, managerColIndex: -1, allColumnHeaders: [], connectHeaders: [], connectData: {}, connectLoginColIdx: -1, connectNameColIdx: -1, auditHeaders: [], auditData: {}, auditLoginColIdx: -1, mailQueue: [], mailQueueIndex: 0 },
+            ict: { workbook: null, sheetData: [], filteredIndices: [], headers: [], loginColIndex: -1, nameColIndex: -1, managerColIndex: -1, allColumnHeaders: [], connectHeaders: [], connectData: {}, connectLoginColIdx: -1, connectNameColIdx: -1, auditHeaders: [], auditData: {}, auditLoginColIdx: -1, mailQueue: [], mailQueueIndex: 0 }
+        };
+
+        let activeTab = 'ait';
+
+        // ========== TAB SWITCHING ==========
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        // ========== AUTO-SELECT PREVIOUS MONTH ==========
+        (function() {
+            const months = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+            const now = new Date();
+            const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+            document.getElementById('monthSelect-ait').value = months[prevMonth];
+            document.getElementById('monthSelect-ict').value = months[prevMonth];
+        })();
+
+        // ========== FILE UPLOAD HANDLERS ==========
+        ['ait', 'ict'].forEach(tab => {
+            document.getElementById(`fileInput-${tab}`).addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                document.getElementById(`fileInfo-${tab}`).textContent = `File: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                setStatus(tab, 'Reading file...');
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        state[tab].workbook = XLSX.read(e.target.result, { type: 'binary' });
+                        populateSheetSelectors(tab);
+                        document.getElementById(`configSection-${tab}`).style.display = 'block';
+                        setStatus(tab, 'File loaded! Configure sheets and click "Detect Columns & Load".');
+                    } catch (err) {
+                        setStatus(tab, 'Error reading file: ' + err.message);
+                    }
+                };
+                reader.readAsBinaryString(file);
+            });
+
+            // Drag and drop
+            const uploadEl = document.getElementById(`uploadSection-${tab}`);
+            uploadEl.addEventListener('dragover', (e) => { e.preventDefault(); uploadEl.style.borderColor = '#00ff88'; });
+            uploadEl.addEventListener('dragleave', () => { uploadEl.style.borderColor = '#00d4ff'; });
+            uploadEl.addEventListener('drop', (e) => {
+                e.preventDefault(); uploadEl.style.borderColor = '#00d4ff';
+                if (e.dataTransfer.files[0]) {
+                    document.getElementById(`fileInput-${tab}`).files = e.dataTransfer.files;
+                    document.getElementById(`fileInput-${tab}`).dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        // ========== POPULATE SHEET SELECTORS ==========
+        function populateSheetSelectors(tab) {
+            const wb = state[tab].workbook;
+            const selectors = [`sheetSelect-${tab}`, `connectSheetSelect-${tab}`, `auditSheetSelect-${tab}`];
+            selectors.forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">-- Not Available --</option>';
+                wb.SheetNames.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name; opt.textContent = name;
+                    select.appendChild(opt);
+                });
+            });
+            wb.SheetNames.forEach(name => {
+                const lower = name.toLowerCase();
+                if (lower.includes('score') || lower.includes('sheet1')) document.getElementById(`sheetSelect-${tab}`).value = name;
+                if (lower.includes('connect report') || lower.includes('connect')) document.getElementById(`connectSheetSelect-${tab}`).value = name;
+                if (lower.includes('audit error') || lower.includes('audit errors') || lower.includes('rqm error')) document.getElementById(`auditSheetSelect-${tab}`).value = name;
+            });
+            if (!document.getElementById(`auditSheetSelect-${tab}`).value) {
+                wb.SheetNames.forEach(name => {
+                    const lower = name.toLowerCase();
+                    if (lower.includes('error') || lower.includes('audit') || lower.includes('rqm')) document.getElementById(`auditSheetSelect-${tab}`).value = name;
+                });
+            }
+            if (!document.getElementById(`sheetSelect-${tab}`).value) document.getElementById(`sheetSelect-${tab}`).value = wb.SheetNames[0];
+        }
+
+        // ========== DETECT & LOAD ==========
+        function detectAndLoad(tab) {
+            const s = state[tab];
+            const wb = s.workbook;
+            const sheetName = document.getElementById(`sheetSelect-${tab}`).value;
+            if (!sheetName) { setStatus(tab, '⚠️ Select a Score Card sheet.'); return; }
+            const sheet = wb.Sheets[sheetName];
+            const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+            const headerRowNum = parseInt(document.getElementById(`headerRowInput-${tab}`).value) || 2;
+            const dataStartRowNum = parseInt(document.getElementById(`dataStartRow-${tab}`).value) || 3;
+            const headerRowIdx = headerRowNum - 1;
+
+            if (headerRowIdx >= rawData.length) { setStatus(tab, '⚠️ Header row beyond data.'); return; }
+
+            const percentCols = new Set();
+            const range = XLSX.utils.decode_range(sheet['!ref']);
+            for (let c = range.s.c; c <= range.e.c; c++) {
+                for (let r = dataStartRowNum - 1; r < Math.min(dataStartRowNum + 5, range.e.r + 1); r++) {
+                    const cellRef = XLSX.utils.encode_cell({ r, c });
+                    const cell = sheet[cellRef];
+                    if (cell && cell.z && cell.z.indexOf('%') !== -1) { percentCols.add(c); break; }
+                    if (cell && cell.w && cell.w.indexOf('%') !== -1) { percentCols.add(c); break; }
+                }
+            }
+
+            s.allColumnHeaders = rawData[headerRowIdx].map(h => {
+                if (h === null || h === undefined || String(h).trim() === '') return null;
+                return String(h).trim();
+            });
+
+            let loginCI = -1, nameCI = -1, managerCI = -1;
+            s.allColumnHeaders.forEach((h, i) => {
+                if (!h) return;
+                const lower = h.toLowerCase();
+                if (lower === 'login' || lower === 'login id' || lower === 'loginid') loginCI = i;
+                if (lower === 'name' || lower === 'associate name' || lower === 'agent name') nameCI = i;
+                if (lower === 'manager') managerCI = i;
+            });
+
+            if (loginCI === -1) { setStatus(tab, '⚠️ Could not find "Login" column.'); return; }
+            // Name column is optional (e.g. ICT score card may not have one - uses Login instead)
+
+            s.headers = []; const validColIndices = [];
+            s.allColumnHeaders.forEach((h, i) => { if (h) { s.headers.push(h); validColIndices.push(i); } });
+
+            s.sheetData = [];
+            for (let i = dataStartRowNum - 1; i < rawData.length; i++) {
+                const row = rawData[i]; if (!row) continue;
+                const login = row[loginCI] ? String(row[loginCI]).trim() : '';
+                const name = nameCI >= 0 ? (row[nameCI] ? String(row[nameCI]).trim() : '') : '';
+                if (!login && !name) continue;
+                // Skip repeated header rows (e.g. ICT score card has section headers mid-sheet)
+                if (login.toLowerCase() === 'login' || login.toLowerCase() === 'login id') continue;
+
+                const mappedRow = validColIndices.map(ci => {
+                    if (percentCols.has(ci)) {
+                        const cellRef = XLSX.utils.encode_cell({ r: i, c: ci });
+                        const cell = sheet[cellRef];
+                        if (cell && cell.w) return cell.w;
+                        if (cell && cell.v !== undefined) {
+                            const num = Number(cell.v);
+                            if (!isNaN(num) && num >= 0 && num <= 1) return (num * 100).toFixed(1) + '%';
+                            return String(cell.v);
+                        }
+                        return '';
+                    }
+                    const val = row[ci];
+                    return (val === null || val === undefined) ? '' : val;
+                });
+                s.sheetData.push(mappedRow);
+            }
+
+            if (s.sheetData.length === 0) { setStatus(tab, '⚠️ No data found in Score Card sheet.'); return; }
+
+            s.loginColIndex = validColIndices.indexOf(loginCI);
+            s.nameColIndex = nameCI >= 0 ? validColIndices.indexOf(nameCI) : -1;
+            s.managerColIndex = validColIndices.indexOf(managerCI);
+
+            loadConnectReport(tab);
+            loadAuditErrors(tab);
+
+            const detDiv = document.getElementById(`detectedCols-${tab}`);
+            detDiv.style.display = 'block';
+            const connectCount = Object.keys(s.connectData).length;
+            const auditCount = Object.keys(s.auditData).length;
+            const auditTotalRows = Object.values(s.auditData).reduce((sum, arr) => sum + arr.length, 0);
+            detDiv.innerHTML = `
+                ✅ Score Card: <span>${s.sheetData.length}</span> associates |
+                Connect Report: <span>${connectCount}</span> entries |
+                Audit Errors: <span>${auditCount}</span> associates (<span>${auditTotalRows}</span> errors)
+                <br>Audit columns detected: <span>${s.auditHeaders.join(', ') || 'None'}</span>
+            `;
+
+            renderTable(tab);
+            populateManagerFilter(tab);
+            document.getElementById(`managerFilterSection-${tab}`).style.display = 'block';
+            document.getElementById(`tableContainer-${tab}`).style.display = 'block';
+            document.getElementById(`actionButtons-${tab}`).style.display = 'flex';
+            document.getElementById(`emailTemplate-${tab}`).style.display = 'block';
+            setStatus(tab, '✅ Loaded all data. Select associates and generate mails.');
+        }
+
+        // ========== LOAD CONNECT REPORT ==========
+        function loadConnectReport(tab) {
+            const s = state[tab];
+            s.connectHeaders = []; s.connectData = {}; s.connectLoginColIdx = -1; s.connectNameColIdx = -1;
+            const sheetName = document.getElementById(`connectSheetSelect-${tab}`).value;
+            if (!sheetName) return;
+            const sheet = s.workbook.Sheets[sheetName];
+            if (!sheet) return;
+
+            const headerRow = parseInt(document.getElementById(`connectHeaderRow-${tab}`).value) || 1;
+            const dataRow = parseInt(document.getElementById(`connectDataRow-${tab}`).value) || 2;
+            const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+            if (rawData.length < headerRow) return;
+            const hdrs = rawData[headerRow - 1].map(h => h ? String(h).trim() : '');
+
+            s.connectLoginColIdx = hdrs.findIndex(h => {
+                const l = h.toLowerCase();
+                return l === 'agent id' || l === 'login' || l === 'agent_id' || l === 'agentid' || l === 'agent';
+            });
+            if (s.connectLoginColIdx === -1) s.connectLoginColIdx = 0;
+
+            // Detect Agent Name column (used as fallback name for ICT where score card has no Name)
+            const agentNameOrigIdx = hdrs.findIndex(h => {
+                const l = h.toLowerCase();
+                return l === 'agent name' || l === 'name' || l === 'associate name';
+            });
+
+            // Build connectHeaders excluding login col (and track name col position in filtered list)
+            s.connectHeaders = [];
+            let nameFilteredIdx = -1;
+            for (let i = 0; i < hdrs.length; i++) {
+                if (i === s.connectLoginColIdx || hdrs[i] === '') continue;
+                if (i === agentNameOrigIdx) nameFilteredIdx = s.connectHeaders.length;
+                s.connectHeaders.push(hdrs[i]);
+            }
+            s.connectNameColIdx = nameFilteredIdx;
+
+            for (let i = dataRow - 1; i < rawData.length; i++) {
+                const row = rawData[i]; if (!row) continue;
+                let login = row[s.connectLoginColIdx] ? String(row[s.connectLoginColIdx]).trim().toLowerCase() : '';
+                if (!login) continue;
+
+                const mappedRow = [];
+                for (let c = 0; c < hdrs.length; c++) {
+                    if (c === s.connectLoginColIdx) continue;
+                    if (hdrs[c] === '') continue;
+                    const cellRef = XLSX.utils.encode_cell({ r: i, c });
+                    const cell = sheet[cellRef];
+                    if (cell && cell.w) { mappedRow.push(cell.w); }
+                    else { mappedRow.push(row[c] !== undefined && row[c] !== null ? row[c] : ''); }
+                }
+                s.connectData[login] = mappedRow;
+            }
+        }
+
+        // ========== LOAD AUDIT ERRORS ==========
+        function loadAuditErrors(tab) {
+            const s = state[tab];
+            s.auditHeaders = []; s.auditData = {}; s.auditLoginColIdx = -1;
+            const sheetName = document.getElementById(`auditSheetSelect-${tab}`).value;
+            if (!sheetName) return;
+            const sheet = s.workbook.Sheets[sheetName];
+            if (!sheet) return;
+
+            const headerRow = parseInt(document.getElementById(`auditHeaderRow-${tab}`).value) || 1;
+            const dataRow = parseInt(document.getElementById(`auditDataRow-${tab}`).value) || 2;
+            const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+            if (rawData.length < headerRow) return;
+            const hdrs = rawData[headerRow - 1].map(h => h ? String(h).trim() : '');
+
+            s.auditLoginColIdx = hdrs.findIndex(h => {
+                const l = h.toLowerCase();
+                return l === 'associate_login' || l === 'login' || l === 'associate login' || l.includes('login');
+            });
+            if (s.auditLoginColIdx === -1) s.auditLoginColIdx = 2;
+
+            s.auditHeaders = hdrs.filter((h, i) => i !== s.auditLoginColIdx && h !== '');
+
+            for (let i = dataRow - 1; i < rawData.length; i++) {
+                const row = rawData[i]; if (!row) continue;
+                let login = row[s.auditLoginColIdx] ? String(row[s.auditLoginColIdx]).trim().toLowerCase() : '';
+                if (!login) continue;
+
+                const mappedRow = [];
+                for (let c = 0; c < hdrs.length; c++) {
+                    if (c === s.auditLoginColIdx) continue;
+                    if (hdrs[c] === '') continue;
+                    mappedRow.push(row[c] !== undefined && row[c] !== null ? row[c] : '');
+                }
+                if (!s.auditData[login]) s.auditData[login] = [];
+                s.auditData[login].push(mappedRow);
+            }
+        }
+
+        // ========== RENDER TABLE ==========
+        function renderTable(tab) {
+            const s = state[tab];
+            // If no filter applied yet, show all
+            if (s.filteredIndices.length === 0 && s.sheetData.length > 0) {
+                s.filteredIndices = s.sheetData.map((_, i) => i);
+            }
+
+            const thead = document.getElementById(`tableHead-${tab}`);
+            let headerHtml = '<tr><th class="checkbox-col">✓</th>';
+            s.headers.forEach(h => { headerHtml += `<th>${escapeHtml(h)}</th>`; });
+            headerHtml += '</tr>';
+            thead.innerHTML = headerHtml;
+
+            const tbody = document.getElementById(`tableBody-${tab}`);
+            let bodyHtml = '';
+            s.filteredIndices.forEach((dataIdx) => {
+                const row = s.sheetData[dataIdx];
+                bodyHtml += `<tr id="row-${tab}-${dataIdx}" onclick="toggleRow('${tab}', ${dataIdx})">`;
+                bodyHtml += `<td class="checkbox-col"><input type="checkbox" id="cb-${tab}-${dataIdx}" onchange="updateCount('${tab}')" onclick="event.stopPropagation()"></td>`;
+                row.forEach(cell => { bodyHtml += `<td>${escapeHtml(String(cell))}</td>`; });
+                bodyHtml += '</tr>';
+            });
+            tbody.innerHTML = bodyHtml;
+            updateCount(tab);
+        }
+
+        // ========== MANAGER FILTER ==========
+        function populateManagerFilter(tab) {
+            const s = state[tab];
+            if (s.managerColIndex < 0) return;
+            const managers = new Set();
+            s.sheetData.forEach(row => {
+                const mgr = row[s.managerColIndex] ? String(row[s.managerColIndex]).trim() : '';
+                if (mgr) managers.add(mgr);
+            });
+            const select = document.getElementById(`managerFilter-${tab}`);
+            select.innerHTML = '<option value="__all__">All Managers</option>';
+            [...managers].sort().forEach(mgr => {
+                const opt = document.createElement('option');
+                opt.value = mgr;
+                opt.textContent = mgr;
+                select.appendChild(opt);
+            });
+            document.getElementById(`filterCount-${tab}`).textContent = `Showing ${s.sheetData.length} of ${s.sheetData.length}`;
+        }
+
+        function applyManagerFilter(tab) {
+            const s = state[tab];
+            const selected = document.getElementById(`managerFilter-${tab}`).value;
+            if (selected === '__all__') {
+                s.filteredIndices = s.sheetData.map((_, i) => i);
+            } else {
+                s.filteredIndices = [];
+                s.sheetData.forEach((row, i) => {
+                    const mgr = row[s.managerColIndex] ? String(row[s.managerColIndex]).trim() : '';
+                    if (mgr === selected) s.filteredIndices.push(i);
+                });
+            }
+            document.getElementById(`filterCount-${tab}`).textContent = `Showing ${s.filteredIndices.length} of ${s.sheetData.length}`;
+            renderTable(tab);
+        }
+
+        // ========== TABLE INTERACTIONS ==========
+        function toggleRow(tab, rowIdx) {
+            const cb = document.getElementById(`cb-${tab}-${rowIdx}`);
+            cb.checked = !cb.checked;
+            document.getElementById(`row-${tab}-${rowIdx}`).classList.toggle('selected', cb.checked);
+            updateCount(tab);
+        }
+
+        function toggleSelectAll(tab) {
+            const checked = document.getElementById(`selectAll-${tab}`).checked;
+            state[tab].filteredIndices.forEach((dataIdx) => {
+                document.getElementById(`cb-${tab}-${dataIdx}`).checked = checked;
+                document.getElementById(`row-${tab}-${dataIdx}`).classList.toggle('selected', checked);
+            });
+            updateCount(tab);
+        }
+
+        function updateCount(tab) {
+            document.getElementById(`selectedCount-${tab}`).textContent = `${getSelectedIndices(tab).length} selected`;
+        }
+
+        function getSelectedIndices(tab) {
+            const indices = [];
+            state[tab].filteredIndices.forEach((dataIdx) => { if (document.getElementById(`cb-${tab}-${dataIdx}`).checked) indices.push(dataIdx); });
+            return indices;
+        }
+
+        function getMonthName(tab) { return document.getElementById(`monthSelect-${tab}`).value; }
+
+        function formatValue(val) {
+            if (typeof val === 'number' && val !== Math.floor(val) && String(val).split('.')[1]?.length > 2) return val.toFixed(2);
+            return val;
+        }
+
+        // ========== BUILD EMAIL CONTENT ==========
+        function buildScoreTableHTML(tab, row) {
+            const s = state[tab];
+            let html = '<div style="overflow-x: auto;"><table class="score-table"><tr>';
+            s.headers.forEach((h, i) => {
+                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
+                html += `<th>${escapeHtml(h)}</th>`;
+            });
+            html += '</tr><tr>';
+            s.headers.forEach((h, i) => {
+                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
+                const val = row[i] !== undefined && row[i] !== '' ? formatValue(row[i]) : 'N/A';
+                html += `<td>${escapeHtml(String(val))}</td>`;
+            });
+            html += '</tr></table></div>';
+            return html;
+        }
+
+        function buildConnectTableHTML(tab, login) {
+            const s = state[tab];
+            const key = login.toLowerCase();
+            const row = s.connectData[key];
+            if (!row || s.connectHeaders.length === 0) return '';
+
+            let html = '<div style="overflow-x: auto;"><table class="score-table"><tr>';
+            s.connectHeaders.forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
+            html += '</tr><tr>';
+            row.forEach(val => { html += `<td>${escapeHtml(String(val))}</td>`; });
+            html += '</tr></table></div>';
+            return html;
+        }
+
+        function buildAuditTableHTML(tab, login) {
+            const s = state[tab];
+            const key = login.toLowerCase();
+            const rows = s.auditData[key];
+            if (!rows || rows.length === 0 || s.auditHeaders.length === 0) return '';
+
+            let html = '<div style="overflow-x: auto;"><table class="audit-table"><tr>';
+            s.auditHeaders.forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
+            html += '</tr>';
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(val => { html += `<td>${escapeHtml(String(val))}</td>`; });
+                html += '</tr>';
+            });
+            html += '</table></div>';
+            return html;
+        }
+
+        function buildFullHTMLEmail(tab, name, month, login, row) {
+            const s = state[tab];
+            let html = `<div style="font-family: Calibri, Arial, sans-serif; font-size: 11pt;">`;
+            html += `<p>Hi ${escapeHtml(name)},</p>`;
+            html += `<p>Please find below your Score Card for the month of ${month}:</p>`;
+
+            html += `<p><b>Score Card:</b></p>`;
+            html += `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-size: 10pt;">`;
+            html += `<tr style="background-color: #4472C4; color: white; font-weight: bold;">`;
+            s.headers.forEach((h, i) => {
+                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
+                html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: center; white-space: nowrap;">${escapeHtml(h)}</td>`;
+            });
+            html += `</tr><tr>`;
+            s.headers.forEach((h, i) => {
+                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
+                const val = row[i] !== undefined && row[i] !== '' ? formatValue(row[i]) : 'N/A';
+                html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: center;">${escapeHtml(String(val))}</td>`;
+            });
+            html += `</tr></table>`;
+
+            const connectRow = s.connectData[login.toLowerCase()];
+            if (connectRow && s.connectHeaders.length > 0) {
+                html += `<br><p><b>Connect Report:</b></p>`;
+                html += `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-size: 10pt;">`;
+                html += `<tr style="background-color: #548235; color: white; font-weight: bold;">`;
+                s.connectHeaders.forEach(h => {
+                    html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: center; white-space: nowrap;">${escapeHtml(h)}</td>`;
+                });
+                html += `</tr><tr>`;
+                connectRow.forEach(val => {
+                    html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: center;">${escapeHtml(String(val))}</td>`;
+                });
+                html += `</tr></table>`;
+            }
+
+            const auditRows = s.auditData[login.toLowerCase()];
+            if (auditRows && auditRows.length > 0 && s.auditHeaders.length > 0) {
+                html += `<br><p><b>Audit Errors:</b></p>`;
+                html += `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-size: 10pt;">`;
+                html += `<tr style="background-color: #C00000; color: white; font-weight: bold;">`;
+                s.auditHeaders.forEach(h => {
+                    html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: center; white-space: nowrap;">${escapeHtml(h)}</td>`;
+                });
+                html += `</tr>`;
+                auditRows.forEach(r => {
+                    html += `<tr>`;
+                    r.forEach(val => { html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: left;">${escapeHtml(String(val))}</td>`; });
+                    html += `</tr>`;
+                });
+                html += `</table>`;
+            }
+
+            html += `<br><p>Please review your scores and reach out to your manager if you have any questions or concerns.</p>`;
+            html += `<p>Best Regards,<br>Pavan Kumar</p></div>`;
+            return html;
+        }
+
+        function buildMailContent(tab, rowIdx) {
+            const s = state[tab];
+            const row = s.sheetData[rowIdx];
+            const login = row[s.loginColIndex] ? String(row[s.loginColIndex]).trim() : '';
+            // Get name: from Name column, or from Connect Report "Agent Name", or fallback to login
+            let name = '';
+            if (s.nameColIndex >= 0 && row[s.nameColIndex]) {
+                name = String(row[s.nameColIndex]).trim();
+            } else {
+                // Try to get name from connect data (Agent Name column)
+                const connectRow = s.connectData[login.toLowerCase()];
+                if (connectRow && s.connectNameColIdx >= 0) {
+                    name = String(connectRow[s.connectNameColIdx]).trim();
+                }
+                if (!name) name = login; // fallback to login
+            }
+            const email = login ? login + '@amazon.com' : name.toLowerCase().replace(/\s+/g, '') + '@amazon.com';
+
+            let managerLogin = '';
+            if (s.managerColIndex >= 0 && row[s.managerColIndex]) managerLogin = String(row[s.managerColIndex]).trim();
+            const ccEmail = managerLogin ? managerLogin + '@amazon.com' : '';
+
+            const month = getMonthName(tab);
+            let subject = document.getElementById(`emailSubject-${tab}`).value
+                .replace(/\{name\}/g, name).replace(/\{month\}/g, month).replace(/\{login\}/g, login);
+
+            let bodyPreviewHTML = `Hi ${escapeHtml(name)},<br><br>`;
+            bodyPreviewHTML += `Please find below your Score Card for the month of ${month}:<br><br>`;
+            bodyPreviewHTML += `<strong>Score Card:</strong><br>`;
+            bodyPreviewHTML += buildScoreTableHTML(tab, row);
+
+            const connectHTML = buildConnectTableHTML(tab, login);
+            if (connectHTML) bodyPreviewHTML += `<br><strong>Connect Report:</strong><br>` + connectHTML;
+
+            const auditHTML = buildAuditTableHTML(tab, login);
+            if (auditHTML) bodyPreviewHTML += `<br><strong>Audit Errors:</strong><br>` + auditHTML;
+
+            bodyPreviewHTML += `<br>Please review your scores and reach out to your manager if you have any questions or concerns.<br><br>Best Regards,<br>Pavan Kumar`;
+
+            const fullHTMLBody = buildFullHTMLEmail(tab, name, month, login, row);
+
+            return { name, login, email, ccEmail, subject, bodyPreviewHTML, fullHTMLBody };
+        }
+
+        // ========== PREVIEW & SEND ==========
+        function previewMails(tab) {
+            const selected = getSelectedIndices(tab);
+            if (selected.length === 0) { setStatus(tab, '⚠️ Select at least one associate.'); return; }
+
+            const previewDiv = document.getElementById(`previewContent-${tab}`);
+            previewDiv.innerHTML = '';
+
+            selected.forEach(idx => {
+                const mail = buildMailContent(tab, idx);
+                const card = document.createElement('div');
+                card.className = 'preview-card';
+                const ccInfo = mail.ccEmail ? `<br><span style="color: #ffa500;">CC: ${escapeHtml(mail.ccEmail)}</span>` : '';
+                card.innerHTML = `
+                    <h4>To: ${escapeHtml(mail.email)}${ccInfo}</h4>
+                    <p style="margin-bottom:5px;"><strong>Subject:</strong> ${escapeHtml(mail.subject)}</p>
+                    <div class="mail-body-preview">${mail.bodyPreviewHTML}</div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.8em;" onclick="sendSingleMail('${tab}', ${idx})">📧 Copy & Open in Outlook</button>
+                    </div>
+                `;
+                previewDiv.appendChild(card);
+            });
+
+            document.getElementById(`previewSection-${tab}`).style.display = 'block';
+            document.getElementById(`previewSection-${tab}`).scrollIntoView({ behavior: 'smooth' });
+            setStatus(tab, `Preview generated for ${selected.length} associate(s).`);
+        }
+
+        function generateMails(tab) {
+            const selected = getSelectedIndices(tab);
+            if (selected.length === 0) { setStatus(tab, '⚠️ Select at least one associate.'); return; }
+
+            state[tab].mailQueue = selected.map(idx => buildMailContent(tab, idx));
+            state[tab].mailQueueIndex = 0;
+            sendNextMail(tab);
+        }
+
+        function sendNextMail(tab) {
+            const s = state[tab];
+            if (s.mailQueueIndex >= s.mailQueue.length) {
+                setStatus(tab, `✅ All ${s.mailQueue.length} draft mails completed!`);
+                document.getElementById(`statusBar-${tab}`).innerHTML = `✅ All <strong>${s.mailQueue.length}</strong> draft mails completed!`;
+                return;
+            }
+
+            const mail = s.mailQueue[s.mailQueueIndex];
+            const current = s.mailQueueIndex + 1;
+            const total = s.mailQueue.length;
+
+            copyHTMLToClipboard(mail.fullHTMLBody);
+
+            let mailto = `mailto:${encodeURIComponent(mail.email)}?subject=${encodeURIComponent(mail.subject)}`;
+            if (mail.ccEmail) mailto += `&cc=${encodeURIComponent(mail.ccEmail)}`;
+            window.open(mailto, '_blank');
+
+            s.mailQueueIndex++;
+
+            if (s.mailQueueIndex < s.mailQueue.length) {
+                setStatus(tab, `📧 [${current}/${total}] Opened mail for ${mail.name}. Paste with Ctrl+V in Outlook, then click the button below for next.`);
+                document.getElementById(`statusBar-${tab}`).innerHTML = `
+                    📧 [${current}/${total}] Mail for <strong>${escapeHtml(mail.name)}</strong> opened. Paste (Ctrl+V) in Outlook. &nbsp;
+                    <button class="btn btn-secondary" style="padding: 8px 20px; font-size: 0.85em;" onclick="sendNextMail('${tab}')">
+                        ➡️ Next (${total - current} remaining)
+                    </button>
+                `;
+            } else {
+                setStatus(tab, `✅ [${current}/${total}] Last mail opened for ${mail.name}. Paste with Ctrl+V. All done!`);
+            }
+        }
+
+        function sendSingleMail(tab, idx) {
+            const mail = buildMailContent(tab, idx);
+            copyHTMLToClipboard(mail.fullHTMLBody);
+            let mailto = `mailto:${encodeURIComponent(mail.email)}?subject=${encodeURIComponent(mail.subject)}`;
+            if (mail.ccEmail) mailto += `&cc=${encodeURIComponent(mail.ccEmail)}`;
+            window.open(mailto, '_blank');
+            setStatus(tab, `✅ Mail opened for ${mail.name}. Paste with Ctrl+V in Outlook for formatted tables.`);
+        }
+
+        function copyHTMLToClipboard(html) {
+            const blob = new Blob([html], { type: 'text/html' });
+            const clipboardItem = new ClipboardItem({ 'text/html': blob });
+            navigator.clipboard.write([clipboardItem]).catch(err => console.log('Clipboard error:', err));
+        }
+
+        function resetAll(tab) {
+            const s = state[tab];
+            s.workbook = null; s.sheetData = []; s.filteredIndices = []; s.headers = [];
+            s.connectHeaders = []; s.connectData = {}; s.connectNameColIdx = -1;
+            s.auditHeaders = []; s.auditData = {};
+            document.getElementById(`fileInput-${tab}`).value = '';
+            document.getElementById(`fileInfo-${tab}`).textContent = '';
+            document.getElementById(`configSection-${tab}`).style.display = 'none';
+            document.getElementById(`tableContainer-${tab}`).style.display = 'none';
+            document.getElementById(`actionButtons-${tab}`).style.display = 'none';
+            document.getElementById(`emailTemplate-${tab}`).style.display = 'none';
+            document.getElementById(`previewSection-${tab}`).style.display = 'none';
+            document.getElementById(`detectedCols-${tab}`).style.display = 'none';
+            document.getElementById(`managerFilterSection-${tab}`).style.display = 'none';
+            document.getElementById(`managerFilter-${tab}`).innerHTML = '<option value="__all__">All Managers</option>';
+            document.getElementById(`filterCount-${tab}`).textContent = '';
+            document.getElementById(`tableHead-${tab}`).innerHTML = '';
+            document.getElementById(`tableBody-${tab}`).innerHTML = '';
+            setStatus(tab, 'Reset complete. Upload a new file.');
+        }
+
+        function setStatus(tab, msg) { document.getElementById(`statusBar-${tab}`).textContent = msg; }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
