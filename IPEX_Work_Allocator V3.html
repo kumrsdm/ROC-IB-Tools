@@ -681,32 +681,9 @@ sec.tasks.forEach(function(task,idx){var id=key+'_'+idx;
 // Filter pool for tasks with ownershipFilter requirement
 var taskPool=filteredPool;
 if(task.ownershipFilter){taskPool=filteredPool.filter(function(m){return(m.ownership||'').toUpperCase().indexOf(task.ownershipFilter.toUpperCase())>=0;});}
-// GL/SKED rotation logic: alternate primary ownership between GL Cases and SKED/AM Cases daily
-if(task.rotateGroup==='GL_SKED'){
-var rotDate=document.getElementById('allocDate').value;
-var dayNum=Math.floor((new Date(rotDate+'T00:00:00').getTime())/(86400000));
-var isEvenDay=(dayNum%2===0);
-var isGLTask=task.name.indexOf('GL Cases')>=0;
-// Check primary ownership: first part before "/"
-// SKED primary goes to one task, GL primary goes to the other, alternating daily
-// Associates with neither GL nor SKED as primary still appear in both (they're in the SKED pool already)
-taskPool=filteredPool.filter(function(m){
-var ow=(m.ownership||'').toUpperCase();
-var parts=ow.split(/\s*\/\s*/);
-var primary=parts[0].trim();
-var hasGL=parts.some(function(p){return p.trim()==='GL';});
-var hasSKED=parts.some(function(p){return p.trim()==='SKED';});
-// If primary is GL → assigned based on rotation
-if(primary==='GL'){return isEvenDay?isGLTask:!isGLTask;}
-// If primary is SKED → assigned based on rotation (opposite of GL)
-if(primary==='SKED'){return isEvenDay?!isGLTask:isGLTask;}
-// Others: check if they have GL or SKED anywhere — assign to SKED/AM Cases side
-if(hasGL){return isEvenDay?isGLTask:!isGLTask;}
-if(hasSKED){return isEvenDay?!isGLTask:isGLTask;}
-// No GL or SKED at all — assign to SKED/AM Cases by default (not both)
-return !isGLTask;
-});
-}// Alert if ownershipFilter task has no available associates
+// GL/SKED rotation: dropdowns show ALL associates for manual flexibility
+// (Smart Randomize still applies rotation when auto-assigning)
+// Alert if ownershipFilter task has no available associates
 var noPoolAlert='';
 if(task.ownershipFilter&&taskPool.length===0){noPoolAlert='<div style="background:#fed7d7;color:#c53030;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-bottom:4px;">⚠️ No ['+task.ownershipFilter+'] associates available — consider calling OT</div>';}
 // Rotation label for GL/SKED tasks
