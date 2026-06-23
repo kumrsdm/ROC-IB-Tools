@@ -710,6 +710,7 @@ function smartRandomize(){
 var antiMap=buildAntiRepeatMap();
 var globalCounts={};
 var uniqueGroupUsed={};
+var glSkedDone=false,glSkedPools={gl:[],sked:[]};
 var halfDaySet={};
 // Build set of half-day associates from the available pools (already filtered correctly)
 [availableTeam.SKED,availableTeam.SFC,availableTeam.ICT,availableTeam.AIT].forEach(function(team){
@@ -756,11 +757,16 @@ var taskPool=filteredPool;
 if(task.ownershipFilter){taskPool=filteredPool.filter(function(login){var member=getPool(sec.group).find(function(m){return m.login===login;});return member&&(member.ownership||'').toUpperCase().indexOf(task.ownershipFilter.toUpperCase())>=0;});}
 // GL/SKED rotation in smartRandomize with 50/50 balancing
 if(task.rotateGroup==='GL_SKED'){
+// Only process on the FIRST task of the pair — assign both at once
+var isGLTask=task.name.indexOf('GL Cases')>=0;
+if(!isGLTask){
+// SKED/AM task — skip here, already handled when GL Cases was processed
+if(glSkedDone){taskPool=glSkedPools.sked;} 
+}else{
+// GL Cases task — split the pool for both tasks now
 var rotDate=document.getElementById('allocDate').value;
 var dayNum=Math.floor((new Date(rotDate+'T00:00:00').getTime())/(86400000));
 var isEvenDay=(dayNum%2===0);
-var isGLTask=task.name.indexOf('GL Cases')>=0;
-// Split pool into GL-primary and SKED-primary groups
 var glGroup=[],skedGroup=[];
 filteredPool.forEach(function(login){
 var member=getPool(sec.group).find(function(m){return m.login===login;});if(!member)return;
@@ -768,18 +774,24 @@ var ow=(member.ownership||'').toUpperCase();var parts=ow.split(/\s*\/\s*/);var p
 var hasGL=parts.some(function(p){return p.trim()==='GL';});
 if(primary==='GL'||(!primary.match(/SKED/)&&hasGL)){glGroup.push(login);}else{skedGroup.push(login);}
 });
-// Determine which group goes to which task today
-var preferredPool=isEvenDay?(isGLTask?glGroup:skedGroup):(isGLTask?skedGroup:glGroup);
-var otherPool=isEvenDay?(isGLTask?skedGroup:glGroup):(isGLTask?glGroup:skedGroup);
-// Target ~50% of total pool for each task
+// Rotation: swap groups on alternate days
+var groupA=isEvenDay?glGroup:skedGroup;
+var groupB=isEvenDay?skedGroup:glGroup;
+// Balance: target ~50% each
 var halfTotal=Math.ceil(filteredPool.length/2);
-// Start with preferred group, overflow from other if needed to reach ~50%
-if(preferredPool.length>=halfTotal){
-taskPool=preferredPool.slice(0,halfTotal);
+var glPool,skedPool;
+if(groupA.length>=halfTotal){
+glPool=groupA.slice(0,halfTotal);
+skedPool=groupA.slice(halfTotal).concat(groupB);
 }else{
-// Take all preferred + extras from other pool to reach 50%
-var extras=halfTotal-preferredPool.length;
-taskPool=preferredPool.concat(otherPool.slice(0,extras));
+var extras=halfTotal-groupA.length;
+glPool=groupA.concat(groupB.slice(0,extras));
+skedPool=groupB.slice(extras);
+}
+// Store for the SKED task to use
+glSkedDone=true;
+glSkedPools={gl:glPool,sked:skedPool};
+taskPool=glPool;
 }
 }
 if(!taskPool.length)return;
