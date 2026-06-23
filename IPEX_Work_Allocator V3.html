@@ -754,21 +754,33 @@ var taskKey=key+'_'+idx;
 // Apply ownershipFilter for specific tasks
 var taskPool=filteredPool;
 if(task.ownershipFilter){taskPool=filteredPool.filter(function(login){var member=getPool(sec.group).find(function(m){return m.login===login;});return member&&(member.ownership||'').toUpperCase().indexOf(task.ownershipFilter.toUpperCase())>=0;});}
-// GL/SKED rotation in smartRandomize
+// GL/SKED rotation in smartRandomize with 50/50 balancing
 if(task.rotateGroup==='GL_SKED'){
 var rotDate=document.getElementById('allocDate').value;
 var dayNum=Math.floor((new Date(rotDate+'T00:00:00').getTime())/(86400000));
 var isEvenDay=(dayNum%2===0);
 var isGLTask=task.name.indexOf('GL Cases')>=0;
-taskPool=filteredPool.filter(function(login){var member=getPool(sec.group).find(function(m){return m.login===login;});if(!member)return false;
+// Split pool into GL-primary and SKED-primary groups
+var glGroup=[],skedGroup=[];
+filteredPool.forEach(function(login){
+var member=getPool(sec.group).find(function(m){return m.login===login;});if(!member)return;
 var ow=(member.ownership||'').toUpperCase();var parts=ow.split(/\s*\/\s*/);var primary=parts[0].trim();
 var hasGL=parts.some(function(p){return p.trim()==='GL';});
-var hasSKED=parts.some(function(p){return p.trim()==='SKED';});
-if(primary==='GL'){return isEvenDay?isGLTask:!isGLTask;}
-if(primary==='SKED'){return isEvenDay?!isGLTask:isGLTask;}
-if(hasGL){return isEvenDay?isGLTask:!isGLTask;}
-if(hasSKED){return isEvenDay?!isGLTask:isGLTask;}
-return !isGLTask;});
+if(primary==='GL'||(!primary.match(/SKED/)&&hasGL)){glGroup.push(login);}else{skedGroup.push(login);}
+});
+// Determine which group goes to which task today
+var preferredPool=isEvenDay?(isGLTask?glGroup:skedGroup):(isGLTask?skedGroup:glGroup);
+var otherPool=isEvenDay?(isGLTask?skedGroup:glGroup):(isGLTask?glGroup:skedGroup);
+// Target ~50% of total pool for each task
+var halfTotal=Math.ceil(filteredPool.length/2);
+// Start with preferred group, overflow from other if needed to reach ~50%
+if(preferredPool.length>=halfTotal){
+taskPool=preferredPool.slice(0,halfTotal);
+}else{
+// Take all preferred + extras from other pool to reach 50%
+var extras=halfTotal-preferredPool.length;
+taskPool=preferredPool.concat(otherPool.slice(0,extras));
+}
 }
 if(!taskPool.length)return;
 // UniqueGroup: exclude people already assigned to another task in same group
