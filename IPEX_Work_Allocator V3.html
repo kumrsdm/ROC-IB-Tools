@@ -409,7 +409,7 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <h2><span class="step-num">1</span> Upload Shift Schedule</h2>
 <div class="alert alert-info">Paste your shift schedule data from Excel. The tool auto-detects team members and shifts.</div>
 <div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (SKED)</label><textarea id="scheduleDataSKED" placeholder="Paste SKED sheet data here (Shift 1 SKED + Shift 3 SKED)..."></textarea></div></div>
-<div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (SFC)</label><textarea id="scheduleDataSFC" placeholder="Paste SFC sheet data here (Shift 1 SFC + Shift 3 SFC)..."></textarea></div></div>
+<div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (SFC)</label><textarea id="scheduleDataSFC" placeholder="Paste SFC sheet data here (Shift 1 SFC)..."></textarea></div></div>
 <div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (ICT)</label><textarea id="scheduleDataICT" placeholder="Paste ICT sheet data here..."></textarea></div></div>
 <div class="form-row"><div class="form-group" style="flex:1;"><label>Schedule Data (AIT)</label><textarea id="scheduleDataAIT" placeholder="Paste AIT sheet data here..."></textarea></div></div>
 <div style="margin-top:16px;border:1px solid #fbd38d;border-radius:8px;padding:14px 16px;background:#fffaf0;">
@@ -518,7 +518,7 @@ h+='<button onclick="removeOT('+i+')" style="border:none;background:none;color:#
 document.getElementById('otList').innerHTML=h;
 }
 
-var TASKS={monitoring:{title:'Monitoring Queues',color:'#1e5c3a',icon:'📡',group:'SKED',tasks:[{name:'Chat Queue Monitoring / Sync up MoM / Hand Over Call'},{name:'Chime/Slack Rooms Monitoring',allPocs:true},{name:'Cases SOS & EOS'},{name:'Res Coca-Cola Monitoring',ownershipFilter:'Res-Coco'},{name:'Network Health Monitoring / Pushouts'},{name:'Cases SL and Mails Check'},{name:'Planned/Unplanned Closures / Closure Slack Channel'},{name:'Triggers check'}]},sked:{title:'SKED & AM — Case Queues',color:'#2d3561',icon:'📋',group:'SKED',tasks:[{name:'GL Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'SKED/AM Cases / PO Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'DFM Cases',allPocs:true},{name:'IB Scheduling Callout Emails',allPocs:true},{name:'Email Monitoring (roc-iaa/roc-rlb1/roc-vio)',allPocs:true},{name:'Hot Pos (Shared Path)',allPocs:true},{name:'Live-Drop mismatch',allPocs:true},{name:'FMC-DM mismatch',allPocs:true},{name:'LTR ETA visibility for IBTL loads',allPocs:true},{name:'EOD buffer & Scrubbings / AZNG Pullin trigger',allPocs:true},{name:'Cases Backlog Division'},{name:'DWP Division (FMC-DM)',uniqueGroup:'DWP'},{name:'DWP Division (LTR-ETA)',uniqueGroup:'DWP'},{name:'DWP Division (D2L)',uniqueGroup:'DWP'},{name:'DWP Division (C-VRID)',uniqueGroup:'DWP'},{name:'Pushout Plan creation'}]},sfc:{title:'SFC',color:'#5c2d5c',icon:'🎫',group:'SFC',tasks:[{name:'SFC Tickets',allPocs:true},{name:'SFC Email Monitoring / Escalation Emails'}]},shiftWash:{title:'Shift Wash',color:'#3d4f1e',icon:'🔄',group:'SKED',tasks:[{name:'Sked SW'},{name:'AM SW'}]},imports:{title:'IMPORTS',color:'#5c1e1e',icon:'🚢',group:'IMPORTS',singlePerson:true,tasks:[{name:'Cases'},{name:'Case SL Check'},{name:'Loads Tendering'},{name:'Contracts creation'},{name:'GM-PO-Issues, NA Imports Accessorial'},{name:'Shift wash'},{name:'Shift wash R4D'}]},ict:{title:'ICT',color:'#1e3d5c',icon:'🌐',group:'ICT',tasks:[{name:'Cases - Redirects and IBWR queues',multi:true},{name:'Case SL Check'},{name:'Sims Execution',multi:true},{name:'IBWR Callout Emails',multi:true},{name:'Shift wash'}]},ait:{title:'AIT',color:'#5c3d1e',icon:'📦',group:'AIT',tasks:[{name:'Missed Pickup Case Queue',allPocs:true}]}};
+var TASKS={monitoring:{title:'Monitoring Queues',color:'#1e5c3a',icon:'📡',group:'SKED',tasks:[{name:'Chat Queue Monitoring / Sync up MoM / Hand Over Call'},{name:'Chime/Slack Rooms Monitoring',allPocs:true},{name:'Cases SOS & EOS'},{name:'Res Coca-Cola Monitoring',ownershipFilter:'Res-Coco'},{name:'Network Health Monitoring / Pushouts'},{name:'Cases SL and Mails Check'},{name:'Planned/Unplanned Closures / Closure Slack Channel'},{name:'Triggers check'}]},sked:{title:'SKED & AM — Case Queues',color:'#2d3561',icon:'📋',group:'SKED',tasks:[{name:'GL Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'SKED/AM Cases / PO Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'DFM "gl-split-shipments" Queue',allPocs:true},{name:'IB Scheduling Callout Emails',allPocs:true},{name:'Email Monitoring (roc-iaa/roc-rlb1/roc-vio)',allPocs:true},{name:'Hot Pos (Shared Path)',allPocs:true},{name:'Live-Drop mismatch',allPocs:true},{name:'FMC-DM mismatch',allPocs:true},{name:'LTR ETA visibility for IBTL loads',allPocs:true},{name:'EOD buffer & Scrubbings / AZNG Pullin trigger',allPocs:true},{name:'Cases Backlog Division'},{name:'DWP Division (FMC-DM)',uniqueGroup:'DWP'},{name:'DWP Division (LTR-ETA)',uniqueGroup:'DWP'},{name:'DWP Division (D2L)',uniqueGroup:'DWP'},{name:'DWP Division (C-VRID)',uniqueGroup:'DWP'},{name:'Pushout Plan creation'}]},sfc:{title:'SFC',color:'#5c2d5c',icon:'🎫',group:'SFC',tasks:[{name:'SFC Tickets',allPocs:true},{name:'SFC Email Monitoring / Escalation Emails'}]},shiftWash:{title:'Shift Wash',color:'#3d4f1e',icon:'🔄',group:'SKED',tasks:[{name:'Sked SW'},{name:'AM SW'}]},imports:{title:'IMPORTS',color:'#5c1e1e',icon:'🚢',group:'IMPORTS',singlePerson:true,hidden:true,tasks:[]},ict:{title:'ICT',color:'#1e3d5c',icon:'🌐',group:'ICT',tasks:[{name:'Cases - Redirects and IBWR queues',multi:true},{name:'Case SL Check'},{name:'Sims Execution',multi:true},{name:'IBWR Callout Emails',multi:true},{name:'Shift wash'}]},ait:{title:'AIT',color:'#5c3d1e',icon:'📦',group:'AIT',tasks:[{name:'MPU & DFM [gl-billing-vrids and gl-carrier-missed-pickup] Queue',allPocs:true}]}};
 
 // ===== HISTORY FUNCTIONS =====
 function getHistory(){
@@ -669,7 +669,7 @@ document.getElementById('antiRepeatInfo').textContent=histDays>0?'🛡️ Anti-r
 // Build OT restriction map
 var otRestricted={};
 otAssociates.forEach(function(o){if(o.taskGroup)otRestricted[o.login]=o.taskGroup;});
-var h='';Object.keys(TASKS).forEach(function(key){var sec=TASKS[key],pool=getPool(sec.group);
+var h='';Object.keys(TASKS).forEach(function(key){var sec=TASKS[key];if(sec.hidden)return;var pool=getPool(sec.group);
 // Filter pool: OT associates with specific taskGroup only show in their assigned group
 var filteredPool=pool.filter(function(m){
 if(otRestricted[m.login]&&otRestricted[m.login]!==key)return false;
@@ -732,7 +732,7 @@ scored.sort(function(a,b){return a.score-b.score;});
 return scored.slice(0,count).map(function(s){return s.login;});
 }
 
-Object.keys(TASKS).forEach(function(key){var sec=TASKS[key],pool=getPool(sec.group).map(function(m){return m.login;});
+Object.keys(TASKS).forEach(function(key){var sec=TASKS[key];if(sec.hidden)return;var pool=getPool(sec.group).map(function(m){return m.login;});
 if(!pool.length)return;
 // Filter: OT associates with a specific taskGroup should only appear in their assigned group
 var otRestricted={};
@@ -939,12 +939,21 @@ function isWorking(shiftValue, selectedShift){
 // Exact match for the selected shift
 if(shiftValue===selectedShift)return true;
 var v=shiftValue?shiftValue.toLowerCase().trim():'';
-// "6th Day" variants count as working (OT in same shift)
-if(v.indexOf('6th')>=0)return true;
 // "OPT OFF Working" counts as working
 if(v==='opt off working')return true;
-// Half-day leaves: only count as working if associate's normal shift matches the selected shift
-// We determine this by NOT matching here — handled in detectAvailability with context
+// "6th Day" and half-day: handled in detectAvailability with member context
+return false;
+}
+function is6thDayWorking(member, date, selectedShift){
+// Check if member has a 6th day on this date AND their normal shift matches selectedShift
+var val=member.shifts[date];
+if(!is6thDayOT(val))return false;
+// Determine their normal shift by checking other dates
+var dates=Object.keys(member.shifts).sort();
+for(var i=0;i<dates.length;i++){
+var v=member.shifts[dates[i]];
+if(v&&v.match(/^Shift \d$/)){return v===selectedShift;}
+}
 return false;
 }
 function isHalfDayWorking(member, date, selectedShift){
@@ -966,10 +975,10 @@ function detectAvailability(){
 var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
 if(!date||!shift)return;
 availableTeam={SKED:[],SFC:[],ICT:[],AIT:[],IMPORTS:[]};
-scheduleData.SKED.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.SKED.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.SKED.push(m);}});
-scheduleData.SFC.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.SFC.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.SFC.push(m);}});
-scheduleData.ICT.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.ICT.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.ICT.push(m);}});
-scheduleData.AIT.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=is6thDayOT(m.shifts[date]);m._isHalf=false;availableTeam.AIT.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.AIT.push(m);}});
+scheduleData.SKED.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=false;m._isHalf=false;availableTeam.SKED.push(m);}else if(is6thDayWorking(m,date,shift)){m._is6th=true;m._isHalf=false;availableTeam.SKED.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.SKED.push(m);}});
+scheduleData.SFC.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=false;m._isHalf=false;availableTeam.SFC.push(m);}else if(is6thDayWorking(m,date,shift)){m._is6th=true;m._isHalf=false;availableTeam.SFC.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.SFC.push(m);}});
+scheduleData.ICT.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=false;m._isHalf=false;availableTeam.ICT.push(m);}else if(is6thDayWorking(m,date,shift)){m._is6th=true;m._isHalf=false;availableTeam.ICT.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.ICT.push(m);}});
+scheduleData.AIT.forEach(function(m){if(isWorking(m.shifts[date],shift)){m._is6th=false;m._isHalf=false;availableTeam.AIT.push(m);}else if(is6thDayWorking(m,date,shift)){m._is6th=true;m._isHalf=false;availableTeam.AIT.push(m);}else if(isHalfDayWorking(m,date,shift)){m._is6th=false;m._isHalf=true;availableTeam.AIT.push(m);}});
 // Build IMPORTS pool: only associates with IMPORTS explicitly in their ownership
 availableTeam.SKED.concat(availableTeam.SFC).forEach(function(m){
 var ow=(m.ownership||'').toUpperCase();
@@ -1047,7 +1056,7 @@ html+='<div style="color:#e53e3e;font-size:14px;font-weight:700;margin-top:3px;"
 html+='<td style="vertical-align:top;width:50%;padding-left:16px;border-left:1px solid #e2e8f0;"><div style="color:#718096;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;">Associates Available</div>';
 html+='<div style="color:#6c63ff;font-size:11px;font-weight:600;margin-top:3px;line-height:1.4;">'+allNames.join(', ')+'</div></td>';
 html+='</tr></table></td></tr>';
-Object.keys(TASKS).forEach(function(key){var sec=TASKS[key];
+Object.keys(TASKS).forEach(function(key){var sec=TASKS[key];if(sec.hidden)return;
 html+='<tr><td style="padding:16px 28px 0 28px;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">';
 html+='<tr><td colspan="2" style="background:'+sec.color+';color:#ffffff;padding:9px 14px;font-size:13px;font-weight:700;border-radius:5px 5px 0 0;">'+sec.icon+' '+sec.title.toUpperCase()+'</td></tr>';
 html+='<tr style="background:#f1f3f5;"><td style="padding:6px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;font-weight:600;border:1px solid #e8ecf0;border-right:none;width:60%;">Task</td>';
