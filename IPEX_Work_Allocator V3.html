@@ -518,7 +518,7 @@ h+='<button onclick="removeOT('+i+')" style="border:none;background:none;color:#
 document.getElementById('otList').innerHTML=h;
 }
 
-var TASKS={monitoring:{title:'Monitoring Queues',color:'#1e5c3a',icon:'📡',group:'SKED',tasks:[{name:'Chat Queue Monitoring / Sync up MoM / Hand Over Call'},{name:'Chime/Slack Rooms Monitoring',allPocs:true},{name:'Cases SOS & EOS'},{name:'Res Coca-Cola Monitoring',ownershipFilter:'Res-Coco'},{name:'Network Health Monitoring / Pushouts'},{name:'Cases SL and Mails Check'},{name:'Planned/Unplanned Closures / Closure Slack Channel'},{name:'Triggers check'}]},sked:{title:'SKED & AM — Case Queues',color:'#2d3561',icon:'📋',group:'SKED',tasks:[{name:'GL Cases',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'SKED/AM Cases / PO Cases / DFM (gl-split-shipments)',multi:true,rotateGroup:'GL_SKED',assignAll:true},{name:'IB Scheduling Callout Emails',allPocs:true},{name:'Email Monitoring (roc-iaa/roc-rlb1/roc-vio)',allPocs:true},{name:'Hot Pos (Shared Path)',allPocs:true},{name:'Live-Drop mismatch',allPocs:true},{name:'FMC-DM mismatch',allPocs:true},{name:'LTR ETA visibility for IBTL loads',allPocs:true},{name:'EOD buffer & Scrubbings / AZNG Pullin trigger',allPocs:true},{name:'Cases Backlog Division'},{name:'DWP Division (FMC-DM)',uniqueGroup:'DWP'},{name:'DWP Division (LTR-ETA)',uniqueGroup:'DWP'},{name:'DWP Division (D2L)',uniqueGroup:'DWP'},{name:'DWP Division (C-VRID)',uniqueGroup:'DWP'},{name:'Pushout Plan creation'}]},sfc:{title:'SFC',color:'#5c2d5c',icon:'🎫',group:'SFC',tasks:[{name:'SFC Tickets',allPocs:true},{name:'SFC Email Monitoring / Escalation Emails'}]},shiftWash:{title:'Shift Wash',color:'#3d4f1e',icon:'🔄',group:'SKED',tasks:[{name:'Sked SW'},{name:'AM SW'}]},imports:{title:'IMPORTS',color:'#5c1e1e',icon:'🚢',group:'IMPORTS',singlePerson:true,hidden:true,tasks:[]},ict:{title:'ICT',color:'#1e3d5c',icon:'🌐',group:'ICT',tasks:[{name:'Cases/Mis-sort/Manifest SIMs',multi:true,ownershipFilter:'DnD',assignAll:true},{name:'LTL & DFM Pull Ins / ESS FC Flips',multi:true,assignAll:true},{name:'Network balancing SIMs/RDM',multi:true,ownershipFilter:'Network Balance',assignAll:true},{name:'Emails/ Callouts'},{name:'Shift wash'}]},ait:{title:'AIT',color:'#5c3d1e',icon:'📦',group:'AIT',tasks:[{name:'MPU & DFM [gl-billing-vrids and gl-carrier-missed-pickup] Queue',allPocs:true}]}};
+var TASKS={monitoring:{title:'Monitoring Queues',color:'#1e5c3a',icon:'📡',group:'SKED',tasks:[{name:'Chat Queue Monitoring / Sync up MoM / Hand Over Call'},{name:'Chime/Slack Rooms Monitoring',allPocs:true},{name:'Cases SOS & EOS'},{name:'Res Coca-Cola Monitoring',ownershipFilter:'Res-Coco'},{name:'Network Health Monitoring / Pushouts'},{name:'Cases SL and Mails Check'},{name:'Planned/Unplanned Closures / Closure Slack Channel'},{name:'Triggers check'}]},sked:{title:'SKED & AM — Case Queues',color:'#2d3561',icon:'📋',group:'SKED',tasks:[{name:'GL Cases',multi:true,rotateGroup:'GL_SKED'},{name:'SKED/AM Cases / PO Cases / DFM (gl-split-shipments)',multi:true,rotateGroup:'GL_SKED'},{name:'IB Scheduling Callout Emails',allPocs:true},{name:'Email Monitoring (roc-iaa/roc-rlb1/roc-vio)',allPocs:true},{name:'Hot Pos (Shared Path)',allPocs:true},{name:'Live-Drop mismatch',allPocs:true},{name:'FMC-DM mismatch',allPocs:true},{name:'LTR ETA visibility for IBTL loads',allPocs:true},{name:'EOD buffer & Scrubbings / AZNG Pullin trigger',allPocs:true},{name:'Cases Backlog Division'},{name:'DWP Division (FMC-DM)',uniqueGroup:'DWP'},{name:'DWP Division (LTR-ETA)',uniqueGroup:'DWP'},{name:'DWP Division (D2L)',uniqueGroup:'DWP'},{name:'DWP Division (C-VRID)',uniqueGroup:'DWP'},{name:'Pushout Plan creation'}]},sfc:{title:'SFC',color:'#5c2d5c',icon:'🎫',group:'SFC',tasks:[{name:'SFC Tickets',allPocs:true},{name:'SFC Email Monitoring / Escalation Emails'}]},shiftWash:{title:'Shift Wash',color:'#3d4f1e',icon:'🔄',group:'SKED',tasks:[{name:'Sked SW'},{name:'AM SW'}]},imports:{title:'IMPORTS',color:'#5c1e1e',icon:'🚢',group:'IMPORTS',singlePerson:true,hidden:true,tasks:[]},ict:{title:'ICT',color:'#1e3d5c',icon:'🌐',group:'ICT',tasks:[{name:'Cases/Mis-sort/Manifest SIMs',multi:true,ownershipFilter:'DnD',assignAll:true},{name:'LTL & DFM Pull Ins / ESS FC Flips',multi:true,assignAll:true},{name:'Network balancing SIMs/RDM',multi:true,ownershipFilter:'Network Balance',assignAll:true},{name:'Emails/ Callouts'},{name:'Shift wash'}]},ait:{title:'AIT',color:'#5c3d1e',icon:'📦',group:'AIT',tasks:[{name:'MPU & DFM [gl-billing-vrids and gl-carrier-missed-pickup] Queue',allPocs:true}]}};
 
 // ===== HISTORY FUNCTIONS =====
 function getHistory(){
@@ -686,16 +686,8 @@ if(task.ownershipFilter){taskPool=filteredPool.filter(function(m){return(m.owner
 // Alert if ownershipFilter task has no available associates
 var noPoolAlert='';
 if(task.ownershipFilter&&taskPool.length===0){noPoolAlert='<div style="background:#fed7d7;color:#c53030;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-bottom:4px;">⚠️ No ['+task.ownershipFilter+'] associates available — consider calling OT</div>';}
-// Rotation label for GL/SKED tasks
+// Label for tasks
 var rotLabel='';
-if(task.rotateGroup==='GL_SKED'){
-var rotDate2=document.getElementById('allocDate').value;
-var dayNum2=Math.floor((new Date(rotDate2+'T00:00:00').getTime())/(86400000));
-var isEven2=(dayNum2%2===0);
-var isGL2=task.name.indexOf('GL Cases')>=0;
-var assignedTo=isEven2?(isGL2?'GL primary':'SKED primary'):(isGL2?'SKED primary':'GL primary');
-rotLabel=' <span style="font-size:9px;color:#2b6cb0;background:#ebf8ff;padding:1px 5px;border-radius:3px;">↻ '+assignedTo+'</span>';
-}
 h+='<div class="task-row"><div class="task-name">'+task.name+(task.ownershipFilter?' <span style="font-size:9px;color:#6b46c1;">['+task.ownershipFilter+']</span>':'')+rotLabel+'</div><div class="task-assignee">'+noPoolAlert;
 var dlId='dl_'+id;
 var optFn=function(m){var isOt=m.isOT||m._is6th||false;return '<option value="'+m.login+'">'+(isOt?(m.isOT?'(OT) ':'(6th) '):'')+'</option>';};
@@ -755,43 +747,21 @@ var taskKey=key+'_'+idx;
 // Apply ownershipFilter for specific tasks
 var taskPool=filteredPool;
 if(task.ownershipFilter){taskPool=filteredPool.filter(function(login){var member=getPool(sec.group).find(function(m){return m.login===login;});return member&&(member.ownership||'').toUpperCase().indexOf(task.ownershipFilter.toUpperCase())>=0;});}
-// GL/SKED rotation in smartRandomize with 50/50 balancing
+// GL/SKED shuffle: randomly split all associates 50/50 between the two tasks (no ownership preference)
 if(task.rotateGroup==='GL_SKED'){
-// Only process on the FIRST task of the pair — assign both at once
 var isGLTask=task.name.indexOf('GL Cases')>=0;
 if(!isGLTask){
-// SKED/AM task — skip here, already handled when GL Cases was processed
-if(glSkedDone){taskPool=glSkedPools.sked;} 
+// SKED/AM task — use stored pool from GL Cases processing
+if(glSkedDone){taskPool=glSkedPools.sked;}
 }else{
-// GL Cases task — split the pool for both tasks now
-var rotDate=document.getElementById('allocDate').value;
-var dayNum=Math.floor((new Date(rotDate+'T00:00:00').getTime())/(86400000));
-var isEvenDay=(dayNum%2===0);
-var glGroup=[],skedGroup=[];
-filteredPool.forEach(function(login){
-var member=getPool(sec.group).find(function(m){return m.login===login;});if(!member)return;
-var ow=(member.ownership||'').toUpperCase();var parts=ow.split(/\s*\/\s*/);var primary=parts[0].trim();
-var hasGL=parts.some(function(p){return p.trim()==='GL';});
-if(primary==='GL'||(!primary.match(/SKED/)&&hasGL)){glGroup.push(login);}else{skedGroup.push(login);}
+// GL Cases — shuffle entire pool and split 50/50
+var shuffled=filteredPool.slice().sort(function(a,b){
+return(getCount(a)+getAntiPenalty(key+'_0',a)*3)-(getCount(b)+getAntiPenalty(key+'_0',b)*3)+Math.random()-0.5;
 });
-// Rotation: swap groups on alternate days
-var groupA=isEvenDay?glGroup:skedGroup;
-var groupB=isEvenDay?skedGroup:glGroup;
-// Balance: target ~50% each
-var halfTotal=Math.ceil(filteredPool.length/2);
-var glPool,skedPool;
-if(groupA.length>=halfTotal){
-glPool=groupA.slice(0,halfTotal);
-skedPool=groupA.slice(halfTotal).concat(groupB);
-}else{
-var extras=halfTotal-groupA.length;
-glPool=groupA.concat(groupB.slice(0,extras));
-skedPool=groupB.slice(extras);
-}
-// Store for the SKED task to use
+var half=Math.ceil(shuffled.length/2);
 glSkedDone=true;
-glSkedPools={gl:glPool,sked:skedPool};
-taskPool=glPool;
+glSkedPools={gl:shuffled.slice(0,half),sked:shuffled.slice(half)};
+taskPool=glSkedPools.gl;
 }
 }
 if(!taskPool.length)return;
