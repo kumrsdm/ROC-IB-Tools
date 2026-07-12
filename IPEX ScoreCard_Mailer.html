@@ -938,12 +938,10 @@
             const s = state[tab];
             let html = '<div style="overflow-x: auto;"><table class="score-table"><tr>';
             s.headers.forEach((h, i) => {
-                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
                 html += `<th>${escapeHtml(h)}</th>`;
             });
             html += '</tr><tr>';
             s.headers.forEach((h, i) => {
-                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
                 const val = row[i] !== undefined && row[i] !== '' ? formatValue(row[i]) : 'N/A';
                 html += `<td>${escapeHtml(String(val))}</td>`;
             });
@@ -993,12 +991,10 @@
             html += `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-size: 10pt;">`;
             html += `<tr style="background-color: #4472C4; color: white; font-weight: bold;">`;
             s.headers.forEach((h, i) => {
-                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
                 html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: center; white-space: nowrap;">${escapeHtml(h)}</td>`;
             });
             html += `</tr><tr>`;
             s.headers.forEach((h, i) => {
-                if (i === s.loginColIndex || (s.nameColIndex >= 0 && i === s.nameColIndex)) return;
                 const val = row[i] !== undefined && row[i] !== '' ? formatValue(row[i]) : 'N/A';
                 html += `<td style="border: 1px solid #999; padding: 5px 8px; text-align: center;">${escapeHtml(String(val))}</td>`;
             });
