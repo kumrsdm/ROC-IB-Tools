@@ -27,6 +27,7 @@
         }
         .tab-btn:first-child { border-radius: 8px 0 0 8px; }
         .tab-btn:last-child { border-radius: 0 8px 8px 0; }
+        .tab-btn:not(:first-child):not(:last-child) { border-radius: 0; }
         .tab-btn.active {
             background: linear-gradient(135deg, #00d4ff, #0099cc);
             color: #000; border-color: #00d4ff;
@@ -158,6 +159,7 @@
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('ait')">AIT</button>
             <button class="tab-btn" onclick="switchTab('ict')">ICT</button>
+            <button class="tab-btn" onclick="switchTab('sked')">SKED</button>
         </div>
 
         <!-- ==================== AIT TAB ==================== -->
@@ -401,13 +403,135 @@
 
             <div class="status-bar" id="statusBar-ict"></div>
         </div>
+
+        <!-- ==================== SKED TAB ==================== -->
+        <div class="tab-content" id="tab-sked">
+            <div class="upload-section" id="uploadSection-sked">
+                <label for="fileInput-sked">
+                    <span class="upload-icon">📁</span>
+                    <strong>Click to upload SKED Score Card Excel file</strong><br>
+                    <small style="color: #8892b0;">Supports .xlsx, .xls, .csv files (single sheet with score card data)</small>
+                </label>
+                <input type="file" id="fileInput-sked" accept=".xlsx,.xls,.csv">
+                <div class="file-info" id="fileInfo-sked"></div>
+            </div>
+
+            <div class="config-section" id="configSection-sked">
+                <h3>⚙️ Configuration</h3>
+                <div class="sheet-config-group">
+                    <h4>📊 Score Card Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="sheetSelect-sked"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="headerRowInput-sked" value="1" min="1" max="20">
+                        <small style="color: #8892b0;">Row with Associate login, Manager, etc.</small>
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="dataStartRow-sked" value="2" min="2" max="50">
+                    </div>
+                </div>
+                <div class="sheet-config-group">
+                    <h4>📞 Connect Report Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="connectSheetSelect-sked"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="connectHeaderRow-sked" value="1" min="1" max="20">
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="connectDataRow-sked" value="2" min="2" max="50">
+                    </div>
+                </div>
+                <div class="sheet-config-group">
+                    <h4>🔍 Audit Errors Sheet</h4>
+                    <div class="config-row">
+                        <label>Sheet:</label>
+                        <select id="auditSheetSelect-sked"></select>
+                    </div>
+                    <div class="config-row">
+                        <label>Header Row #:</label>
+                        <input type="number" id="auditHeaderRow-sked" value="1" min="1" max="20">
+                    </div>
+                    <div class="config-row">
+                        <label>Data starts at row #:</label>
+                        <input type="number" id="auditDataRow-sked" value="2" min="2" max="50">
+                    </div>
+                </div>
+                <div style="margin-top: 15px; text-align: center;">
+                    <button class="btn btn-primary" onclick="detectAndLoad('sked')">🔍 Detect Columns & Load</button>
+                </div>
+                <div class="detected-cols" id="detectedCols-sked" style="display:none;"></div>
+            </div>
+
+            <div class="email-template" id="emailTemplate-sked">
+                <h3>✉️ Email Template</h3>
+                <div class="config-row" style="margin-bottom: 15px;">
+                    <label style="min-width: 140px; color: #8892b0;">Score Card Month:</label>
+                    <select id="monthSelect-sked" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0; font-size: 0.9em;">
+                        <option value="January">January</option><option value="February">February</option>
+                        <option value="March">March</option><option value="April">April</option>
+                        <option value="May">May</option><option value="June">June</option>
+                        <option value="July">July</option><option value="August">August</option>
+                        <option value="September">September</option><option value="October">October</option>
+                        <option value="November">November</option><option value="December">December</option>
+                    </select>
+                </div>
+                <label style="color: #8892b0; font-size: 0.85em;">Subject Line:</label>
+                <input type="text" id="emailSubject-sked" value="Your SKED Score Card for {month} 2026">
+            </div>
+
+            <!-- Manager Filter - SKED -->
+            <div class="config-section" id="managerFilterSection-sked" style="display: none;">
+                <h3>👤 Filter by Manager</h3>
+                <div class="config-row">
+                    <label style="min-width: 140px; color: #8892b0;">Manager:</label>
+                    <select id="managerFilter-sked" onchange="applyManagerFilter('sked')" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #2a3a5e; background: #1a2744; color: #e0e0e0; font-size: 0.9em; min-width: 250px;">
+                        <option value="__all__">All Managers</option>
+                    </select>
+                    <span id="filterCount-sked" style="color: #00ff88; font-size: 0.85em; margin-left: 10px;"></span>
+                </div>
+            </div>
+
+            <div class="table-container" id="tableContainer-sked">
+                <div class="select-all-row">
+                    <input type="checkbox" id="selectAll-sked" onchange="toggleSelectAll('sked')">
+                    <label for="selectAll-sked" style="color: #ccd6f6; cursor: pointer;">Select All</label>
+                    <span id="selectedCount-sked" style="margin-left: auto; color: #00d4ff; font-size: 0.85em;">0 selected</span>
+                </div>
+                <table>
+                    <thead id="tableHead-sked"></thead>
+                    <tbody id="tableBody-sked"></tbody>
+                </table>
+            </div>
+
+            <div class="actions" id="actionButtons-sked">
+                <button class="btn btn-secondary" onclick="generateMails('sked')">📧 Generate Draft Mails</button>
+                <button class="btn btn-primary" onclick="previewMails('sked')">👁️ Preview Mails</button>
+                <button class="btn btn-danger" onclick="resetAll('sked')">🔄 Reset</button>
+            </div>
+
+            <div class="preview-section" id="previewSection-sked">
+                <h3>📋 Mail Preview</h3>
+                <div id="previewContent-sked"></div>
+            </div>
+
+            <div class="status-bar" id="statusBar-sked"></div>
+        </div>
     </div>
 
     <script>
         // ========== STATE PER TAB ==========
         const state = {
             ait: { workbook: null, sheetData: [], filteredIndices: [], headers: [], loginColIndex: -1, nameColIndex: -1, managerColIndex: -1, allColumnHeaders: [], connectHeaders: [], connectData: {}, connectLoginColIdx: -1, connectNameColIdx: -1, auditHeaders: [], auditData: {}, auditLoginColIdx: -1, mailQueue: [], mailQueueIndex: 0 },
-            ict: { workbook: null, sheetData: [], filteredIndices: [], headers: [], loginColIndex: -1, nameColIndex: -1, managerColIndex: -1, allColumnHeaders: [], connectHeaders: [], connectData: {}, connectLoginColIdx: -1, connectNameColIdx: -1, auditHeaders: [], auditData: {}, auditLoginColIdx: -1, mailQueue: [], mailQueueIndex: 0 }
+            ict: { workbook: null, sheetData: [], filteredIndices: [], headers: [], loginColIndex: -1, nameColIndex: -1, managerColIndex: -1, allColumnHeaders: [], connectHeaders: [], connectData: {}, connectLoginColIdx: -1, connectNameColIdx: -1, auditHeaders: [], auditData: {}, auditLoginColIdx: -1, mailQueue: [], mailQueueIndex: 0 },
+            sked: { workbook: null, sheetData: [], filteredIndices: [], headers: [], loginColIndex: -1, nameColIndex: -1, managerColIndex: -1, allColumnHeaders: [], connectHeaders: [], connectData: {}, connectLoginColIdx: -1, connectNameColIdx: -1, auditHeaders: [], auditData: {}, auditLoginColIdx: -1, mailQueue: [], mailQueueIndex: 0 }
         };
 
         let activeTab = 'ait';
@@ -429,10 +553,11 @@
             const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
             document.getElementById('monthSelect-ait').value = months[prevMonth];
             document.getElementById('monthSelect-ict').value = months[prevMonth];
+            document.getElementById('monthSelect-sked').value = months[prevMonth];
         })();
 
         // ========== FILE UPLOAD HANDLERS ==========
-        ['ait', 'ict'].forEach(tab => {
+        ['ait', 'ict', 'sked'].forEach(tab => {
             document.getElementById(`fileInput-${tab}`).addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -480,7 +605,7 @@
             });
             wb.SheetNames.forEach(name => {
                 const lower = name.toLowerCase();
-                if (lower.includes('score') || lower.includes('sheet1')) document.getElementById(`sheetSelect-${tab}`).value = name;
+                if (lower.includes('score') || lower.includes('final') || lower.includes('sheet1')) document.getElementById(`sheetSelect-${tab}`).value = name;
                 if (lower.includes('connect report') || lower.includes('connect')) document.getElementById(`connectSheetSelect-${tab}`).value = name;
                 if (lower.includes('audit error') || lower.includes('audit errors') || lower.includes('rqm error')) document.getElementById(`auditSheetSelect-${tab}`).value = name;
             });
@@ -528,9 +653,9 @@
             s.allColumnHeaders.forEach((h, i) => {
                 if (!h) return;
                 const lower = h.toLowerCase();
-                if (lower === 'login' || lower === 'login id' || lower === 'loginid') loginCI = i;
+                if (lower === 'login' || lower === 'login id' || lower === 'loginid' || lower === 'associate login') loginCI = i;
                 if (lower === 'name' || lower === 'associate name' || lower === 'agent name') nameCI = i;
-                if (lower === 'manager') managerCI = i;
+                if (lower === 'manager' || lower === 'associate manager') managerCI = i;
             });
 
             if (loginCI === -1) { setStatus(tab, '⚠️ Could not find "Login" column.'); return; }
@@ -546,7 +671,7 @@
                 const name = nameCI >= 0 ? (row[nameCI] ? String(row[nameCI]).trim() : '') : '';
                 if (!login && !name) continue;
                 // Skip repeated header rows (e.g. ICT score card has section headers mid-sheet)
-                if (login.toLowerCase() === 'login' || login.toLowerCase() === 'login id') continue;
+                if (login.toLowerCase() === 'login' || login.toLowerCase() === 'login id' || login.toLowerCase() === 'associate login') continue;
 
                 const mappedRow = validColIndices.map(ci => {
                     if (percentCols.has(ci)) {
@@ -674,6 +799,12 @@
             });
             if (s.auditLoginColIdx === -1) s.auditLoginColIdx = 2;
 
+            // Detect ERROR STATUS column to filter only DEFECT rows
+            const errorStatusColIdx = hdrs.findIndex(h => {
+                const l = h.toLowerCase();
+                return l === 'error status' || l === 'error_status' || l === 'status';
+            });
+
             s.auditHeaders = hdrs.filter((h, i) => i !== s.auditLoginColIdx && h !== '');
 
             for (let i = dataRow - 1; i < rawData.length; i++) {
@@ -681,11 +812,24 @@
                 let login = row[s.auditLoginColIdx] ? String(row[s.auditLoginColIdx]).trim().toLowerCase() : '';
                 if (!login) continue;
 
+                // Filter: only include rows where ERROR STATUS is "DEFECT" (skip NO DEFECT and others)
+                if (errorStatusColIdx >= 0) {
+                    const status = row[errorStatusColIdx] ? String(row[errorStatusColIdx]).trim().toUpperCase() : '';
+                    if (status !== 'DEFECT') continue;
+                }
+
                 const mappedRow = [];
                 for (let c = 0; c < hdrs.length; c++) {
                     if (c === s.auditLoginColIdx) continue;
                     if (hdrs[c] === '') continue;
-                    mappedRow.push(row[c] !== undefined && row[c] !== null ? row[c] : '');
+                    // Use formatted cell value for dates (Excel stores dates as serial numbers)
+                    const cellRef = XLSX.utils.encode_cell({ r: i, c });
+                    const cell = sheet[cellRef];
+                    if (cell && cell.w) {
+                        mappedRow.push(cell.w);
+                    } else {
+                        mappedRow.push(row[c] !== undefined && row[c] !== null ? row[c] : '');
+                    }
                 }
                 if (!s.auditData[login]) s.auditData[login] = [];
                 s.auditData[login].push(mappedRow);
