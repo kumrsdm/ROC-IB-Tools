@@ -404,7 +404,7 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <button class="nav-tab" id="tabBtnHist" onclick="switchMainTab('history')">📜 History</button>
 </div>
 <div id="mainAllocator">
-<div class="step-indicator"><div class="step-dot active" id="dot1"></div><div class="step-dot" id="dot2"></div><div class="step-dot" id="dot3"></div><div class="step-dot" id="dot4"></div></div>
+<div class="step-indicator"><div class="step-dot active" id="dot1"></div><div class="step-dot" id="dot2"></div><div class="step-dot" id="dot3"></div><div class="step-dot" id="dot4"></div><div class="step-dot" id="dot5"></div></div>
 <div class="card" id="step1">
 <h2><span class="step-num">1</span> Upload Shift Schedule</h2>
 <div class="alert alert-info">Paste your shift schedule data from Excel. The tool auto-detects team members and shifts.</div>
@@ -462,7 +462,19 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <div id="historySaveMsg" class="hidden" style="margin-bottom:12px;"></div>
 <div id="tabPreview"><div class="email-preview-frame" id="emailPreviewFrame"></div></div>
 <div id="tabEdit" class="hidden"><textarea id="emailEditor" style="width:100%;min-height:400px;font-family:Consolas,monospace;font-size:11px;padding:12px;border:2px solid #e2e8f0;border-radius:8px;"></textarea></div>
-<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="goToStep(3)">← Back</button><button class="btn btn-success" onclick="downloadEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy</button></div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="goToStep(3)">← Back</button><button class="btn btn-success" onclick="downloadEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy</button><button class="btn btn-primary" onclick="goToStep(5)">📊 Shrinkage →</button></div>
+</div>
+<div class="card hidden" id="step5">
+<h2><span class="step-num">5</span> Shrinkage &amp; Attendance Report</h2>
+<div class="alert alert-info">Shrinkage is calculated from the full schedule for the selected date &amp; shift (all teams combined). <strong>HC in Office</strong> is editable — adjust it if needed and the RTO Compliance recalculates.</div>
+<div id="shrinkageContent"></div>
+<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+<button class="btn btn-sm btn-primary" onclick="showShrTab('preview')">Preview</button>
+<button class="btn btn-sm btn-secondary" onclick="showShrTab('edit')">✏️ Edit HTML</button>
+</div>
+<div id="shrTabPreview" style="margin-top:12px;"><div class="email-preview-frame" id="shrPreviewFrame"></div></div>
+<div id="shrTabEdit" class="hidden" style="margin-top:12px;"><textarea id="shrEditor" style="width:100%;min-height:300px;font-family:Consolas,monospace;font-size:11px;padding:12px;border:2px solid #e2e8f0;border-radius:8px;"></textarea></div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="goToStep(4)">← Back</button><button class="btn btn-success" onclick="downloadShrEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyShrToClipboard()">📋 Copy</button></div>
 </div>
 </div>
 <div id="mainHistory" class="hidden">
@@ -654,8 +666,8 @@ if(tab==='history')renderHistoryTable();
 
 // ===== MAIN ALLOCATOR FUNCTIONS =====
 function goToStep(s){
-for(var i=1;i<=4;i++){document.getElementById('step'+i).classList.toggle('hidden',i!==s);document.getElementById('dot'+i).className='step-dot'+(i<s?' done':'')+(i===s?' active':'');}
-if(s===3){var already=document.getElementById('allTaskSections').innerHTML.trim();if(!already){renderTasks();}renderResources();}if(s===4)generateEmail();
+for(var i=1;i<=5;i++){document.getElementById('step'+i).classList.toggle('hidden',i!==s);document.getElementById('dot'+i).className='step-dot'+(i<s?' done':'')+(i===s?' active':'');}
+if(s===3){var already=document.getElementById('allTaskSections').innerHTML.trim();if(!already){renderTasks();}renderResources();}if(s===4)generateEmail();if(s===5)renderShrinkage();
 }
 function getPool(g){
 if(g==='SKED')return availableTeam.SKED;if(g==='SFC')return availableTeam.SFC;
@@ -875,6 +887,9 @@ if(login.match(/^\d{1,2}\/\d{1,2}\/\d{2,4}/)||login.match(/^\d{4}-\d{2}-\d{2}/)|
 if(login.indexOf('Shift')>=0)continue;
 var ownership='SKED';var owCol=-1;
 for(var m=1;m<Math.min(dsc<0?5:dsc,cols.length);m++){var cv=cols[m]?cols[m].trim().toUpperCase():'';if(cv.indexOf('/')>=0||(cv&&(cv==='SFC'||cv==='SKED'||cv==='ICT'||cv==='AIT'||cv==='DND'||cv==='NETWORK BALANCE'||cv.indexOf('SKED')>=0||cv.indexOf('SFC')>=0||cv.indexOf('GL')>=0||cv.indexOf('DM')>=0||cv.indexOf('IM')>=0||cv.indexOf('IMPORTS')>=0||cv.indexOf('RES')>=0||cv.indexOf('DND')>=0||cv.indexOf('NETWORK')>=0))){ownership=cols[m].trim();owCol=m;break;}}
+// Capture Location column — location is ONLY ever BnM or VROC. Scan cols between login and dates for an exact match.
+var location='';
+for(var lc=1;lc<Math.min(dsc<0?8:dsc,cols.length);lc++){var lv=cols[lc]?cols[lc].trim():'';var lvU=lv.toUpperCase();if(lvU==='BNM'||lvU==='VROC'){location=lv;break;}}
 var shifts={};
 // Find where shifts actually start for this row
 var rowShiftStart=dsc;
@@ -888,7 +903,7 @@ if(tv&&tv.match(/^(Shift|OFF|AL|CL|SL|FHCL|FHSL|SHCL|SHSL|SHAL|FHAL|Training|OPT
 if(shiftOffset<0){shiftOffset=0;rowShiftStart=dsc;}
 }
 for(var n=rowShiftStart;n<cols.length;n++){var di=n-rowShiftStart;if(di<dates.length&&dates[di]){var v=cols[n]?cols[n].trim():'';if(v&&v.match(/^(Shift|OFF|AL|CL|SL|FHCL|FHSL|SHCL|SHSL|SHAL|FHAL|Training|OPT OFF|Mandatory OFF|6th Day|6th|NCNS)/i))shifts[dates[di]]=v;}}
-if(Object.keys(shifts).length>0)results.push({login:login,ownership:ownership,shifts:shifts});}
+if(Object.keys(shifts).length>0)results.push({login:login,ownership:ownership,location:location,shifts:shifts});}
 return results;
 }
 function isHalfDay(shiftValue){
@@ -1064,6 +1079,198 @@ function copyToClipboard(){
 var body=document.getElementById('emailEditor').value||emailHtml;
 navigator.clipboard.writeText(body).then(function(){alert('✅ HTML copied to clipboard!');});
 }
+
+// ===== SHRINKAGE / ATTENDANCE =====
+var shrEmailHtml='';
+// Classify a raw shift cell value for the selected shift
+function shrClassify(val,selectedShift){
+// Returns {working:0/0.5/1, planned:0/0.5/1, unplanned:0/0.5/1, ot:0/1, counts:true/false}
+// counts=false means the person is OFF/blank and excluded from Planned HC
+var res={working:0,planned:0,unplanned:0,ot:0,counts:false};
+if(!val)return res;
+var v=val.trim();var vU=v.toUpperCase();
+// OFF / blank => excluded entirely
+if(vU==='OFF'||vU==='OPT OFF'||vU==='MANDATORY OFF'){
+// OPT OFF / Mandatory OFF are planned leave (they were scheduled off but count in planned leave per requirement)
+if(vU==='OPT OFF'||vU==='MANDATORY OFF'){res.counts=true;res.planned=1;return res;}
+return res; // plain OFF excluded
+}
+// OT / 6th day working
+if(vU==='OPT OFF WORKING'||vU.indexOf('6TH')>=0){res.counts=true;res.working=1;res.ot=1;return res;}
+// Working the selected shift exactly
+if(v===selectedShift){res.counts=true;res.working=1;return res;}
+// Full-day planned leave
+if(vU==='AL'||vU==='CL'){res.counts=true;res.planned=1;return res;}
+// Full-day unplanned leave
+if(vU==='SL'||vU==='NCNS'){res.counts=true;res.unplanned=1;return res;}
+// Half-day planned: FHAL/SHAL/FHCL/SHCL => 0.5 leave + 0.5 working (only if their normal shift matches)
+if(vU==='FHAL'||vU==='SHAL'||vU==='FHCL'||vU==='SHCL'){res.counts=true;res.planned=0.5;res.working=0.5;return res;}
+// Half-day unplanned: FHSL/SHSL => 0.5 leave + 0.5 working
+if(vU==='FHSL'||vU==='SHSL'){res.counts=true;res.unplanned=0.5;res.working=0.5;return res;}
+// Working a different shift than selected => not part of this shift's report
+if(v.match(/^Shift \d$/))return res;
+// Anything else (Training etc.) => treat as working if it's the person's active row; skip by default
+return res;
+}
+// Determine a member's normal shift by scanning their shift values
+function shrNormalShift(member){
+var dates=Object.keys(member.shifts).sort();
+for(var i=0;i<dates.length;i++){var v=member.shifts[dates[i]];if(v&&v.match(/^Shift \d$/))return v;}
+return '';
+}
+// Does this associate belong to the selected shift for shrinkage purposes?
+// True if: working the selected shift, OT/6th, OR on any leave whose normal shift is the selected shift.
+function shrBelongsToShift(mem,date,shift){
+var raw=mem.shifts[date];
+if(raw===undefined||raw===null||raw==='')return false;
+var v=raw.trim();var vU=v.toUpperCase();
+if(vU==='OFF')return false; // plain OFF excluded entirely
+// Working exactly this shift, or OT/6th
+if(v===shift)return true;
+if(vU==='OPT OFF WORKING'||vU.indexOf('6TH')>=0)return true;
+// A different explicit shift => not this shift
+if(v.match(/^Shift \d$/))return false;
+// Leave value (AL/CL/SL/NCNS/OPT OFF/Mandatory OFF/half-days) => belongs to their NORMAL shift
+var ns=shrNormalShift(mem);
+if(ns)return ns===shift;
+// No normal shift marker found anywhere — fall back to counting it (single-shift sheet)
+return true;
+}
+function computeShrinkage(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var all=[].concat(scheduleData.SKED,scheduleData.SFC,scheduleData.ICT,scheduleData.AIT);
+var m={plannedHC:0,actualHC:0,planned:0,unplanned:0,ot:0,rtoPlanned:0,rtoActual:0,rows:[],excluded:[]};
+var seen={};
+all.forEach(function(mem){
+if(seen[mem.login])return; // avoid double-count if a login appears in two sheets
+var raw=mem.shifts[date];
+if(raw===undefined||raw===null){m.excluded.push({login:mem.login,loc:mem.location||'(none)',val:'(no value for '+date+')',reason:'No schedule value for this date'});return;}
+// Only include people belonging to the selected shift (working it, OT, or on leave from it)
+if(!shrBelongsToShift(mem,date,shift)){m.excluded.push({login:mem.login,loc:mem.location||'(none)',val:raw,reason:'Not part of '+shift+' (normal shift: '+(shrNormalShift(mem)||'?')+')'});return;}
+var c=shrClassify(raw,shift);
+if(!c.counts){m.excluded.push({login:mem.login,loc:mem.location||'(none)',val:raw,reason:'Value not counted (OFF/unknown token)'});return;}
+seen[mem.login]=true;
+var isBnM=(mem.location||'').toUpperCase()==='BNM';
+m.plannedHC+=1; // any scheduled (non-OFF) person counts as 1 planned head
+m.actualHC+=c.working;
+m.planned+=c.planned;
+m.unplanned+=c.unplanned;
+m.ot+=c.ot;
+if(isBnM){m.rtoPlanned+=1;m.rtoActual+=c.working;}
+m.rows.push({login:mem.login,loc:mem.location||'(none)',val:raw,working:c.working,bnm:isBnM});
+});
+m.totalLeaves=m.planned+m.unplanned;
+return m;
+}
+function fmtPct(n,d){if(!d)return '0%';return (Math.round((n/d)*1000)/10)+'%';}
+function fmtNum(n){return (Math.round(n*10)/10);}
+function renderShrinkage(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+if(!date||!shift){document.getElementById('shrinkageContent').innerHTML='<div class="alert alert-warning">Select a date and shift first (Step 2).</div>';document.getElementById('shrPreviewFrame').innerHTML='';return;}
+var m=computeShrinkage();
+window._shrData=m;
+var h='<div class="stats-bar">';
+h+='<div class="stat-item"><div class="num">'+fmtNum(m.plannedHC)+'</div><div class="label">Planned HC</div></div>';
+h+='<div class="stat-item"><div class="num">'+fmtNum(m.actualHC)+'</div><div class="label">Actual HC</div></div>';
+h+='<div class="stat-item"><div class="num">'+fmtNum(m.planned)+'</div><div class="label">Planned Leave</div></div>';
+h+='<div class="stat-item"><div class="num">'+fmtNum(m.unplanned)+'</div><div class="label">Unplanned Leave</div></div>';
+h+='<div class="stat-item"><div class="num">'+fmtNum(m.totalLeaves)+'</div><div class="label">Total Leaves</div></div>';
+h+='<div class="stat-item"><div class="num">'+fmtNum(m.ot)+'</div><div class="label">OT / 6th Day</div></div>';
+h+='</div>';
+h+='<div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">';
+h+='<div class="stat-item" style="min-width:120px;"><div class="num" style="color:#c05621;">'+fmtPct(m.planned,m.plannedHC)+'</div><div class="label">Planned Shrink%</div></div>';
+h+='<div class="stat-item" style="min-width:120px;"><div class="num" style="color:#c05621;">'+fmtPct(m.unplanned,m.plannedHC)+'</div><div class="label">Unplanned Shrink%</div></div>';
+h+='<div class="stat-item" style="min-width:120px;"><div class="num" style="color:#c05621;">'+fmtPct(m.totalLeaves,m.plannedHC)+'</div><div class="label">Overall Shrink%</div></div>';
+h+='</div>';
+h+='<div style="margin-top:16px;border:1px solid #e8ecf0;border-radius:8px;padding:14px 16px;max-width:360px;">';
+h+='<h3 style="font-size:13px;color:#4a5568;margin-bottom:10px;">🏢 RTO (BnM Location)</h3>';
+h+='<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;"><span>RTO Planned</span><strong>'+fmtNum(m.rtoPlanned)+'</strong></div>';
+h+='<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;"><span>RTO Actual</span><strong>'+fmtNum(m.rtoActual)+'</strong></div>';
+h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px;"><span>HC in Office</span><input type="number" id="shrHcOffice" value="'+fmtNum(m.rtoActual)+'" min="0" step="0.5" style="width:70px;padding:4px 8px;font-size:13px;" oninput="updateShrRTO()"></div>';
+h+='<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-top:1px solid #e8ecf0;margin-top:4px;"><span>RTO Compliance</span><strong id="shrCompliance" style="color:#38a169;">'+fmtPct(m.rtoActual,m.rtoActual)+'</strong></div>';
+h+='</div>';
+// Debug breakdown — shows exactly who was counted, their parsed Location and shift value
+h+='<details style="margin-top:14px;"><summary style="cursor:pointer;font-size:12px;color:#4a5568;font-weight:600;">🔍 View counted associates ('+m.rows.length+') — check Location detection</summary>';
+h+='<table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px;"><tr style="background:#f7fafc;"><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Login</th><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Location</th><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Shift Value</th><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Working</th><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">BnM?</th></tr>';
+m.rows.forEach(function(r){h+='<tr><td style="padding:3px 8px;border:1px solid #f0f4f8;">'+r.login+'</td><td style="padding:3px 8px;border:1px solid #f0f4f8;'+(r.loc==='(none)'?'color:#e53e3e;font-weight:600;':'')+'">'+r.loc+'</td><td style="padding:3px 8px;border:1px solid #f0f4f8;">'+r.val+'</td><td style="padding:3px 8px;border:1px solid #f0f4f8;">'+r.working+'</td><td style="padding:3px 8px;border:1px solid #f0f4f8;">'+(r.bnm?'✅':'')+'</td></tr>';});
+h+='</table></details>';
+// Debug breakdown — associates that were parsed but EXCLUDED from this shift's report, with the reason
+h+='<details style="margin-top:10px;"><summary style="cursor:pointer;font-size:12px;color:#e53e3e;font-weight:600;">⚠️ View excluded associates ('+m.excluded.length+') — why someone is missing</summary>';
+h+='<table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px;"><tr style="background:#fff5f5;"><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Login</th><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Location</th><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Value ('+date+')</th><th style="padding:4px 8px;text-align:left;border:1px solid #e8ecf0;">Reason excluded</th></tr>';
+m.excluded.forEach(function(r){h+='<tr><td style="padding:3px 8px;border:1px solid #f0f4f8;">'+r.login+'</td><td style="padding:3px 8px;border:1px solid #f0f4f8;">'+r.loc+'</td><td style="padding:3px 8px;border:1px solid #f0f4f8;">'+r.val+'</td><td style="padding:3px 8px;border:1px solid #f0f4f8;color:#c05621;">'+r.reason+'</td></tr>';});
+h+='</table></details>';
+document.getElementById('shrinkageContent').innerHTML=h;
+generateShrEmail();
+}
+function updateShrRTO(){
+var m=window._shrData;if(!m)return;
+var hcOffice=parseFloat(document.getElementById('shrHcOffice').value)||0;
+document.getElementById('shrCompliance').textContent=fmtPct(hcOffice,m.rtoActual);
+generateShrEmail();
+}
+function generateShrEmail(){
+var m=window._shrData;if(!m)return;
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var shiftNum=shift.replace('Shift ','');
+var mgr=document.getElementById('managerName').value||'Manager';
+var hcOffice=parseFloat((document.getElementById('shrHcOffice')||{}).value)||m.rtoActual;
+var d=new Date(date+'T00:00:00');
+var dateSlash=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
+var html='<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:20px;background:#ffffff;font-family:Segoe UI,Arial,sans-serif;color:#1a202c;">';
+html+='<div style="font-size:14px;margin-bottom:14px;">Hi All,</div>';
+html+='<div style="font-size:14px;margin-bottom:16px;">Please find the IPEX Shift '+shiftNum+' attendance report.</div>';
+html+='<table cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse;font-size:13px;border-color:#333;margin-bottom:20px;">';
+html+='<tr style="font-weight:700;">';
+html+='<td style="padding:6px 12px;border:1px solid #333;">Planned HC</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">Actual HC</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">Planned shrinkage</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">Un Planned shrinkage</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">Overall Shrinkage</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">Total Leaves</td></tr>';
+html+='<tr>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtNum(m.plannedHC)+'</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtNum(m.actualHC)+'</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtPct(m.planned,m.plannedHC)+'</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtPct(m.unplanned,m.plannedHC)+'</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtPct(m.totalLeaves,m.plannedHC)+'</td>';
+html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtNum(m.totalLeaves)+'</td></tr>';
+html+='</table>';
+html+='<table cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse;font-size:13px;border-color:#333;margin-bottom:20px;">';
+html+='<tr style="font-weight:700;"><td style="padding:6px 12px;border:1px solid #333;min-width:140px;">RTO</td><td style="padding:6px 12px;border:1px solid #333;">Count</td></tr>';
+html+='<tr><td style="padding:6px 12px;border:1px solid #333;">RTO Planned</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtNum(m.rtoPlanned)+'</td></tr>';
+html+='<tr><td style="padding:6px 12px;border:1px solid #333;">RTO Actual</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtNum(m.rtoActual)+'</td></tr>';
+html+='<tr><td style="padding:6px 12px;border:1px solid #333;">HC in Office</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtNum(hcOffice)+'</td></tr>';
+html+='<tr><td style="padding:6px 12px;border:1px solid #333;">RTO Compliance</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtPct(hcOffice,m.rtoActual)+'</td></tr>';
+html+='</table>';
+html+='<div style="margin-top:16px;"><div style="color:#2f855a;font-weight:700;font-style:italic;">Thanks and Regards,</div>';
+html+='<div style="color:#dd6b20;font-weight:700;">'+mgr+'</div>';
+html+='<div style="color:#2f855a;font-weight:700;">Manager I, ROC, ICT &amp; AIT, NA</div></div>';
+html+='</body></html>';
+shrEmailHtml=html;
+document.getElementById('shrPreviewFrame').innerHTML=html;
+document.getElementById('shrEditor').value=html;
+}
+function showShrTab(tab){
+document.getElementById('shrTabPreview').classList.toggle('hidden',tab!=='preview');
+document.getElementById('shrTabEdit').classList.toggle('hidden',tab!=='edit');
+if(tab==='edit')document.getElementById('shrEditor').value=shrEmailHtml;
+}
+function downloadShrEml(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var shiftNum=shift.replace('Shift ','');
+var d=new Date(date+'T00:00:00');var dateSlash=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
+var subject='S'+shiftNum+' Attendance Report - IPEX : '+dateSlash;
+var body=document.getElementById('shrEditor').value||shrEmailHtml;
+var eml='To: hyd-ipex-core@amazon.com\r\nSubject: '+subject+'\r\nX-Unsent: 1\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n'+body;
+var blob=new Blob([eml],{type:'message/rfc822'});
+var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+a.download='IPEX_Attendance_Report_Shift'+shiftNum+'_'+date+'.eml';a.click();
+}
+function copyShrToClipboard(){
+var body=document.getElementById('shrEditor').value||shrEmailHtml;
+navigator.clipboard.writeText(body).then(function(){alert('✅ Attendance report HTML copied to clipboard!');});
+}
+
 function renderResources(){
 var h='';RESOURCES.forEach(function(r,i){
 h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:6px 10px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:6px;">';
