@@ -467,6 +467,11 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <div class="card hidden" id="step5">
 <h2><span class="step-num">5</span> Shrinkage &amp; Attendance Report</h2>
 <div class="alert alert-info">Shrinkage is calculated from the full schedule for the selected date &amp; shift (all teams combined). <strong>HC in Office</strong> is editable — adjust it if needed and the RTO Compliance recalculates.</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding:12px 14px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;">
+<div class="form-group" style="margin:0;"><label>Date</label><input type="date" id="shrDate" onchange="renderShrinkage()"></div>
+<div class="form-group" style="margin:0;"><label>Shift</label><select id="shrShift" onchange="renderShrinkage()"><option value="Shift 1">Shift 1</option><option value="Shift 3">Shift 3</option></select></div>
+<span style="font-size:12px;color:#718096;">Change date/shift here to check any day without going back.</span>
+</div>
 <div id="shrinkageContent"></div>
 <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
 <button class="btn btn-sm btn-primary" onclick="showShrTab('preview')">Preview</button>
@@ -1137,7 +1142,9 @@ if(ns)return ns===shift;
 return true;
 }
 function computeShrinkage(){
-var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var sd=document.getElementById('shrDate'),ss=document.getElementById('shrShift');
+var date=(sd&&sd.value)?sd.value:document.getElementById('allocDate').value;
+var shift=(ss&&ss.value)?ss.value:document.getElementById('allocShift').value;
 var all=[].concat(scheduleData.SKED,scheduleData.SFC,scheduleData.ICT,scheduleData.AIT);
 var m={plannedHC:0,actualHC:0,planned:0,unplanned:0,ot:0,rtoPlanned:0,rtoActual:0,rows:[],excluded:[]};
 var seen={};
@@ -1165,8 +1172,12 @@ return m;
 function fmtPct(n,d){if(!d)return '0%';return (Math.round((n/d)*1000)/10)+'%';}
 function fmtNum(n){return (Math.round(n*10)/10);}
 function renderShrinkage(){
-var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
-if(!date||!shift){document.getElementById('shrinkageContent').innerHTML='<div class="alert alert-warning">Select a date and shift first (Step 2).</div>';document.getElementById('shrPreviewFrame').innerHTML='';return;}
+// Seed the Shrinkage date/shift picker from Step 2 the first time it's empty
+var shrDateEl=document.getElementById('shrDate'),shrShiftEl=document.getElementById('shrShift');
+if(shrDateEl&&!shrDateEl.value)shrDateEl.value=document.getElementById('allocDate').value||'';
+if(shrShiftEl&&!shrShiftEl.value)shrShiftEl.value=document.getElementById('allocShift').value||'Shift 1';
+var date=shrDateEl?shrDateEl.value:document.getElementById('allocDate').value,shift=shrShiftEl?shrShiftEl.value:document.getElementById('allocShift').value;
+if(!date||!shift){document.getElementById('shrinkageContent').innerHTML='<div class="alert alert-warning">Select a date and shift above.</div>';document.getElementById('shrPreviewFrame').innerHTML='';return;}
 var m=computeShrinkage();
 window._shrData=m;
 var h='<div class="stats-bar">';
@@ -1210,7 +1221,9 @@ generateShrEmail();
 }
 function generateShrEmail(){
 var m=window._shrData;if(!m)return;
-var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var sd=document.getElementById('shrDate'),ss=document.getElementById('shrShift');
+var date=(sd&&sd.value)?sd.value:document.getElementById('allocDate').value;
+var shift=(ss&&ss.value)?ss.value:document.getElementById('allocShift').value;
 var shiftNum=shift.replace('Shift ','');
 var mgr=document.getElementById('managerName').value||'Manager';
 var hcOffice=parseFloat((document.getElementById('shrHcOffice')||{}).value)||m.rtoActual;
@@ -1219,28 +1232,28 @@ var dateSlash=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
 var html='<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:20px;background:#ffffff;font-family:Segoe UI,Arial,sans-serif;color:#1a202c;">';
 html+='<div style="font-size:14px;margin-bottom:14px;">Hi All,</div>';
 html+='<div style="font-size:14px;margin-bottom:16px;">Please find the IPEX Shift '+shiftNum+' attendance report.</div>';
-html+='<table cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse;font-size:13px;border-color:#333;margin-bottom:20px;">';
+html+='<table cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse;font-size:13px;border-color:#000;margin-bottom:18px;">';
 html+='<tr style="font-weight:700;">';
-html+='<td style="padding:6px 12px;border:1px solid #333;">Planned HC</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">Actual HC</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">Planned shrinkage</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">Un Planned shrinkage</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">Overall Shrinkage</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">Total Leaves</td></tr>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">Planned HC</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">Actual HC</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">Planned shrinkage</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">Un Planned shrinkage</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">Overall Shrinkage</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">Total Leaves</td></tr>';
 html+='<tr>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtNum(m.plannedHC)+'</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtNum(m.actualHC)+'</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtPct(m.planned,m.plannedHC)+'</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtPct(m.unplanned,m.plannedHC)+'</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtPct(m.totalLeaves,m.plannedHC)+'</td>';
-html+='<td style="padding:6px 12px;border:1px solid #333;">'+fmtNum(m.totalLeaves)+'</td></tr>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">'+fmtNum(m.plannedHC)+'</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">'+fmtNum(m.actualHC)+'</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">'+fmtPct(m.planned,m.plannedHC)+'</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">'+fmtPct(m.unplanned,m.plannedHC)+'</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">'+fmtPct(m.totalLeaves,m.plannedHC)+'</td>';
+html+='<td style="padding:4px 10px;border:1px solid #000;">'+fmtNum(m.totalLeaves)+'</td></tr>';
 html+='</table>';
-html+='<table cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse;font-size:13px;border-color:#333;margin-bottom:20px;">';
-html+='<tr style="font-weight:700;"><td style="padding:6px 12px;border:1px solid #333;min-width:140px;">RTO</td><td style="padding:6px 12px;border:1px solid #333;">Count</td></tr>';
-html+='<tr><td style="padding:6px 12px;border:1px solid #333;">RTO Planned</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtNum(m.rtoPlanned)+'</td></tr>';
-html+='<tr><td style="padding:6px 12px;border:1px solid #333;">RTO Actual</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtNum(m.rtoActual)+'</td></tr>';
-html+='<tr><td style="padding:6px 12px;border:1px solid #333;">HC in Office</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtNum(hcOffice)+'</td></tr>';
-html+='<tr><td style="padding:6px 12px;border:1px solid #333;">RTO Compliance</td><td style="padding:6px 12px;border:1px solid #333;text-align:right;">'+fmtPct(hcOffice,m.rtoActual)+'</td></tr>';
+html+='<table cellpadding="0" cellspacing="0" border="1" style="border-collapse:collapse;font-size:13px;border-color:#000;margin-bottom:18px;">';
+html+='<tr style="font-weight:700;"><td style="padding:4px 10px;border:1px solid #000;">RTO</td><td style="padding:4px 10px;border:1px solid #000;">Count</td></tr>';
+html+='<tr><td style="padding:4px 10px;border:1px solid #000;">RTO Planned</td><td style="padding:4px 10px;border:1px solid #000;text-align:right;">'+fmtNum(m.rtoPlanned)+'</td></tr>';
+html+='<tr><td style="padding:4px 10px;border:1px solid #000;">RTO Actual</td><td style="padding:4px 10px;border:1px solid #000;text-align:right;">'+fmtNum(m.rtoActual)+'</td></tr>';
+html+='<tr><td style="padding:4px 10px;border:1px solid #000;">HC in Office</td><td style="padding:4px 10px;border:1px solid #000;text-align:right;">'+fmtNum(hcOffice)+'</td></tr>';
+html+='<tr><td style="padding:4px 10px;border:1px solid #000;">RTO Compliance</td><td style="padding:4px 10px;border:1px solid #000;text-align:right;">'+fmtPct(hcOffice,m.rtoActual)+'</td></tr>';
 html+='</table>';
 html+='<div style="margin-top:16px;"><div style="color:#2f855a;font-weight:700;font-style:italic;">Thanks and Regards,</div>';
 html+='<div style="color:#dd6b20;font-weight:700;">'+mgr+'</div>';
@@ -1256,7 +1269,9 @@ document.getElementById('shrTabEdit').classList.toggle('hidden',tab!=='edit');
 if(tab==='edit')document.getElementById('shrEditor').value=shrEmailHtml;
 }
 function downloadShrEml(){
-var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var sd=document.getElementById('shrDate'),ss=document.getElementById('shrShift');
+var date=(sd&&sd.value)?sd.value:document.getElementById('allocDate').value;
+var shift=(ss&&ss.value)?ss.value:document.getElementById('allocShift').value;
 var shiftNum=shift.replace('Shift ','');
 var d=new Date(date+'T00:00:00');var dateSlash=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
 var subject='S'+shiftNum+' Attendance Report - IPEX : '+dateSlash;
