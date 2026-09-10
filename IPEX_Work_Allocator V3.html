@@ -401,11 +401,12 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <div class="container">
 <div class="nav-tabs">
 <button class="nav-tab active" id="tabBtnAlloc" onclick="switchMainTab('allocator')">📋 Allocator</button>
-<button class="nav-tab" id="tabBtnHist" onclick="switchMainTab('history')">📜 History</button>
+<button class="nav-tab" id="tabBtnShrink" onclick="switchMainTab('shrinkage')">� Shrinkage &amp; Attendance</button>
 <button class="nav-tab" id="tabBtnConnect" onclick="switchMainTab('connect')">📞 Connect Compliance</button>
+<button class="nav-tab" id="tabBtnHist" onclick="switchMainTab('history')">📜 History</button>
 </div>
 <div id="mainAllocator">
-<div class="step-indicator"><div class="step-dot active" id="dot1"></div><div class="step-dot" id="dot2"></div><div class="step-dot" id="dot3"></div><div class="step-dot" id="dot4"></div><div class="step-dot" id="dot5"></div></div>
+<div class="step-indicator"><div class="step-dot active" id="dot1"></div><div class="step-dot" id="dot2"></div><div class="step-dot" id="dot3"></div><div class="step-dot" id="dot4"></div></div>
 <div class="card" id="step1">
 <h2><span class="step-num">1</span> Upload Shift Schedule</h2>
 <div class="alert alert-info">Paste your shift schedule data from Excel. The tool auto-detects team members and shifts.</div>
@@ -431,7 +432,7 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <h2><span class="step-num">2</span> Select Date &amp; Shift</h2>
 <div class="form-row"><div class="form-group"><label>Date</label><input type="date" id="allocDate" onchange="detectAvailability()"></div><div class="form-group"><label>Shift</label><select id="allocShift" onchange="detectAvailability()"><option value="">--</option><option value="Shift 1">Shift 1</option><option value="Shift 2">Shift 2</option><option value="Shift 3">Shift 3</option></select></div><div class="form-group"><label>Manager(s)</label><input type="text" id="managerName" placeholder="e.g. Kumrsdm &amp; Smohu"></div></div>
 <div id="availabilityResult" class="hidden"><div class="stats-bar" id="statsBar"></div><div style="margin-top:14px;" id="teamGrids"></div></div>
-<div style="margin-top:16px;display:flex;gap:12px;"><button class="btn btn-secondary" onclick="goToStep(1)">← Back</button><button class="btn btn-primary" onclick="goToStep(3)">Continue →</button></div>
+<div style="margin-top:16px;display:flex;gap:12px;"><button class="btn btn-secondary" onclick="goToStep(1)">← Back</button><button class="btn btn-primary" onclick="continueFromStep2()">Continue →</button></div>
 </div>
 <div class="card hidden" id="step3">
 <h2><span class="step-num">3</span> Allocate Tasks</h2>
@@ -463,11 +464,13 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <div id="historySaveMsg" class="hidden" style="margin-bottom:12px;"></div>
 <div id="tabPreview"><div class="email-preview-frame" id="emailPreviewFrame"></div></div>
 <div id="tabEdit" class="hidden"><textarea id="emailEditor" style="width:100%;min-height:400px;font-family:Consolas,monospace;font-size:11px;padding:12px;border:2px solid #e2e8f0;border-radius:8px;"></textarea></div>
-<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="goToStep(3)">← Back</button><button class="btn btn-success" onclick="downloadEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy</button><button class="btn btn-primary" onclick="goToStep(5)">📊 Shrinkage →</button></div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="goToStep(3)">← Back</button><button class="btn btn-success" onclick="downloadEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy</button></div>
 </div>
-<div class="card hidden" id="step5">
-<h2><span class="step-num">5</span> Shrinkage &amp; Attendance Report</h2>
-<div class="alert alert-info">Shrinkage is calculated from the full schedule for the selected date &amp; shift (all teams combined). <strong>HC in Office</strong> is editable — adjust it if needed and the RTO Compliance recalculates.</div>
+</div>
+<div id="mainShrinkage" class="hidden">
+<div class="card">
+<h2>📊 Shrinkage &amp; Attendance Report</h2>
+<div class="alert alert-info">Shrinkage is calculated from the full schedule for the selected date &amp; shift (all teams combined). Load the schedule in the Allocator tab first. <strong>HC in Office</strong> is editable — adjust it if needed and the RTO Compliance recalculates.</div>
 <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding:12px 14px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;">
 <div class="form-group" style="margin:0;"><label>Date</label><input type="date" id="shrDate" onchange="renderShrinkage()"></div>
 <div class="form-group" style="margin:0;"><label>Shift</label><select id="shrShift" onchange="renderShrinkage()"><option value="Shift 1">Shift 1</option><option value="Shift 3">Shift 3</option></select></div>
@@ -480,7 +483,7 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 </div>
 <div id="shrTabPreview" style="margin-top:12px;"><div class="email-preview-frame" id="shrPreviewFrame"></div></div>
 <div id="shrTabEdit" class="hidden" style="margin-top:12px;"><textarea id="shrEditor" style="width:100%;min-height:300px;font-family:Consolas,monospace;font-size:11px;padding:12px;border:2px solid #e2e8f0;border-radius:8px;"></textarea></div>
-<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-secondary" onclick="goToStep(4)">← Back</button><button class="btn btn-success" onclick="downloadShrEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyShrToClipboard()">📋 Copy</button></div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-success" onclick="downloadShrEml()">⬇ Download .eml</button><button class="btn btn-primary" onclick="copyShrToClipboard()">📋 Copy</button></div>
 </div>
 </div>
 <div id="mainHistory" class="hidden">
@@ -505,6 +508,7 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <div id="mainConnect" class="hidden">
 <div class="card">
 <h2>📞 Connect Compliance — AUX / Availability</h2>
+<div style="margin-bottom:12px;font-size:13px;"><a href="https://c2-na-prod.my.connect.aws/analytics-dashboards?reportArn=arn:aws:connect:us-east-1:388387288316:instance/4781912d-c3c3-4eb2-9f9e-be0cecb4e098/report/06f4d723-215a-4572-b4e4-cc4ab15033d0" target="_blank" style="color:#2b6cb0;text-decoration:none;font-weight:600;">🔗 Connect Dashboard Link</a></div>
 <div class="alert alert-info">Paste the <strong>Nam Sked dashboard — Current agent performance</strong> export (CSV). The tool shows who is on <strong>Available (AUX)</strong> vs. other states (Lunch, Project, Break, etc.), grouped by shift &amp; location.</div>
 <div class="form-row"><div class="form-group" style="flex:1;"><label>Dashboard Data (CSV)</label><textarea id="connectData" placeholder="Paste the dashboard CSV here (Agent,Channel,Contact,Activity,Agent duration,Contact state,Contact duration,Agent hierarchy)..."></textarea></div></div>
 <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -693,12 +697,15 @@ function toggleHistDetail(i){document.getElementById('histDetail_'+i).classList.
 // ===== TAB NAVIGATION =====
 function switchMainTab(tab){
 document.getElementById('mainAllocator').classList.toggle('hidden',tab!=='allocator');
+document.getElementById('mainShrinkage').classList.toggle('hidden',tab!=='shrinkage');
 document.getElementById('mainHistory').classList.toggle('hidden',tab!=='history');
 document.getElementById('mainConnect').classList.toggle('hidden',tab!=='connect');
 document.getElementById('tabBtnAlloc').classList.toggle('active',tab==='allocator');
+document.getElementById('tabBtnShrink').classList.toggle('active',tab==='shrinkage');
 document.getElementById('tabBtnHist').classList.toggle('active',tab==='history');
 document.getElementById('tabBtnConnect').classList.toggle('active',tab==='connect');
 if(tab==='history')renderHistoryTable();
+if(tab==='shrinkage')renderShrinkage();
 }
 // ===== CONNECT COMPLIANCE (AUX / AVAILABILITY) =====
 var connectData=[];
@@ -888,9 +895,22 @@ document.getElementById('connectResult').innerHTML=h;
 }
 
 // ===== MAIN ALLOCATOR FUNCTIONS =====
+// Guard for Step 2 -> Step 3: Manager(s) login is mandatory.
+function continueFromStep2(){
+var mgrEl=document.getElementById('managerName');
+var mgr=(mgrEl.value||'').trim();
+if(!mgr){
+alert('⚠️ Please enter the Manager(s) login before continuing.\n\nExample: Kumrsdm  (or  Kumrsdm & Smohu)');
+mgrEl.focus();
+mgrEl.style.borderColor='#e53e3e';
+return;
+}
+mgrEl.style.borderColor='';
+goToStep(3);
+}
 function goToStep(s){
-for(var i=1;i<=5;i++){document.getElementById('step'+i).classList.toggle('hidden',i!==s);document.getElementById('dot'+i).className='step-dot'+(i<s?' done':'')+(i===s?' active':'');}
-if(s===3){var already=document.getElementById('allTaskSections').innerHTML.trim();if(!already){renderTasks();}renderResources();}if(s===4)generateEmail();if(s===5)renderShrinkage();
+for(var i=1;i<=4;i++){document.getElementById('step'+i).classList.toggle('hidden',i!==s);document.getElementById('dot'+i).className='step-dot'+(i<s?' done':'')+(i===s?' active':'');}
+if(s===3){var already=document.getElementById('allTaskSections').innerHTML.trim();if(!already){renderTasks();}renderResources();}if(s===4)generateEmail();
 }
 function getPool(g){
 if(g==='SKED')return availableTeam.SKED;if(g==='SFC')return availableTeam.SFC;
@@ -1473,9 +1493,6 @@ html+='<tr><td style="padding:4px 10px;border:1px solid #000;">RTO Actual</td><t
 html+='<tr><td style="padding:4px 10px;border:1px solid #000;">HC in Office</td><td style="padding:4px 10px;border:1px solid #000;text-align:right;">'+fmtNum(hcOffice)+'</td></tr>';
 html+='<tr><td style="padding:4px 10px;border:1px solid #000;">RTO Compliance</td><td style="padding:4px 10px;border:1px solid #000;text-align:right;">'+fmtPct(hcOffice,m.rtoActual)+'</td></tr>';
 html+='</table>';
-html+='<div style="margin-top:16px;"><div style="color:#2f855a;font-weight:700;font-style:italic;">Thanks and Regards,</div>';
-html+='<div style="color:#dd6b20;font-weight:700;">'+mgr+'</div>';
-html+='<div style="color:#2f855a;font-weight:700;">Manager I, ROC, ICT &amp; AIT, NA</div></div>';
 html+='</body></html>';
 shrEmailHtml=html;
 document.getElementById('shrPreviewFrame').innerHTML=html;
