@@ -888,20 +888,88 @@ function parseAppLanesSheet(wb, sheetName) {
   // Each taker is ONLY valid for its specific Type + Region combination
   const lookup = {};  // key: "TYPE|REGION" => Set of taker FCs
   
-  // Structure from screenshot:
-  // Left side: cols 0=Type(nIXD/rIXD), 1=Region, 2=TAKER1, 3=TAKER2
-  // Right side: cols 8=TYPE(USNS), 9=REGION, 10=TAKER1, 11=TAKER2
-  // Row 0 = title, Row 1 = headers (Type, Region, TAKER 1, TAKER 2, ...)
-  // Rows 2+: data
+  // Left side is always: cols 0=Type(nIXD/rIXD), 1=Region, 2=TAKER1, 3=TAKER2
+  // Right side (USNS) column positions vary across weeks — auto-detect from header row
+  // Row 0 = title, Row 1 = headers, Rows 2+ = data
+  
+  // Auto-detect USNS column positions by scanning header row for "TYPE" keyword (after col 4)
+  let usnsTypeCol = -1, usnsRegionCol = -1, usnsTaker1Col = -1, usnsTaker2Col = -1;
+  const headerRow = data[1] || [];
+  for (let c = 4; c < headerRow.length; c++) {
+    const h = String(headerRow[c] || '').trim().toUpperCase();
+    if (h === 'TYPE') {
+      usnsTypeCol = c;
+      usnsRegionCol = c + 1;
+      usnsTaker1Col = c + 2;
+      usnsTaker2Col = c + 3;
+      break;
+    }
+  }
+  console.log('APP Lanes USNS columns detected: TYPE=' + usnsTypeCol + ', REGION=' + usnsRegionCol + ', TAKER1=' + usnsTaker1Col + ', TAKER2=' + usnsTaker2Col);
+  
+  // Parse removal notes from cols 7+ in the top section
+  // Pattern: "Effective X/X PM: <FC> removed as taker for <REGION>"
+  // Build a set of removed FCs per TYPE|REGION so we can exclude them
+  const removedTakers = {};  // key: "TYPE|REGION" => Set of removed FC codes
+  
+  function extractRemovedFCs(noteText) {
+    // Extract FC codes (3-4 letter + 1-2 digit pattern) from removal notes
+    const fcs = [];
+    if (!noteText) return fcs;
+    const note = String(noteText).trim().toLowerCase();
+    if (!note.includes('removed')) return fcs;
+    // Match FC codes like RMN3, IND9, MEM1, RFD2, GYR2 etc.
+    const matches = String(noteText).match(/\b([A-Z]{2,4}\d{1,2})\b/gi);
+    if (matches) {
+      matches.forEach(m => fcs.push(m.toUpperCase()));
+    }
+    return fcs;
+  }
   
   function addTaker(type, region, taker) {
     if (!type || !region || !taker || taker === 'NAN' || taker === 'N/A' || taker.length < 3) return;
+    // Skip if taker contains "REMOVED" text (bottom section annotations)
+    if (taker.includes('REMOVED')) return;
     const key = type + '|' + region;
+    // Skip if this taker was explicitly removed per notes
+    if (removedTakers[key] && removedTakers[key].has(taker)) {
+      console.log('  Skipping removed taker:', taker, 'for', key);
+      return;
+    }
     if (!lookup[key]) lookup[key] = new Set();
     lookup[key].add(taker);
   }
   
+  // First pass: scan for removal notes in the top section (rows 2 until first blank/separator row)
+  let dataEndRow = data.length;
   for (let i = 2; i < data.length; i++) {
+    const row = data[i];
+    const col0 = String(row[0] || '').trim().toUpperCase();
+    // Stop at blank rows or section separators (e.g., "rIXD-FLOOR", "GIVER")
+    if (!col0 || col0.includes('-FLOOR') || col0.includes('-PALLET') || col0 === 'GIVER') {
+      dataEndRow = i;
+      break;
+    }
+    // Scan note columns (7+) for removal annotations
+    const lType = col0;
+    const lRegion = String(row[1] || '').trim().toUpperCase();
+    for (let c = 7; c < row.length; c++) {
+      const note = String(row[c] || '').trim();
+      if (note.toLowerCase().includes('removed')) {
+        const removedFCs = extractRemovedFCs(note);
+        const key = lType + '|' + lRegion;
+        if (!removedTakers[key]) removedTakers[key] = new Set();
+        removedFCs.forEach(fc => {
+          removedTakers[key].add(fc);
+          console.log('  Removal noted:', fc, 'from', key, '| Note:', note);
+        });
+      }
+    }
+  }
+  console.log('APP Lanes data rows: 2 to', dataEndRow, '| Removed takers:', JSON.stringify(Object.fromEntries(Object.entries(removedTakers).map(([k,v]) => [k, [...v]]))));
+  
+  // Second pass: build the lookup, skipping removed takers
+  for (let i = 2; i < dataEndRow; i++) {
     const row = data[i];
     
     // Left side: IXD types (nIXD, rIXD)
@@ -913,14 +981,16 @@ function parseAppLanesSheet(wb, sheetName) {
     addTaker(lType, lRegion, lTaker1);
     addTaker(lType, lRegion, lTaker2);
     
-    // Right side: USNS (Non-Sort)
-    const rType = String(row[8] || '').trim().toUpperCase();
-    const rRegion = String(row[9] || '').trim().toUpperCase();
-    const rTaker1 = String(row[10] || '').trim().toUpperCase();
-    const rTaker2 = String(row[11] || '').trim().toUpperCase();
-    
-    addTaker(rType, rRegion, rTaker1);
-    addTaker(rType, rRegion, rTaker2);
+    // Right side: USNS (Non-Sort) — auto-detected column positions
+    if (usnsTypeCol >= 0) {
+      const rType = String(row[usnsTypeCol] || '').trim().toUpperCase();
+      const rRegion = String(row[usnsRegionCol] || '').trim().toUpperCase();
+      const rTaker1 = String(row[usnsTaker1Col] || '').trim().toUpperCase();
+      const rTaker2 = String(row[usnsTaker2Col] || '').trim().toUpperCase();
+      
+      addTaker(rType, rRegion, rTaker1);
+      addTaker(rType, rRegion, rTaker2);
+    }
   }
   
   state.appLanes = { lookup };
