@@ -402,6 +402,7 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <div class="nav-tabs">
 <button class="nav-tab active" id="tabBtnAlloc" onclick="switchMainTab('allocator')">📋 Allocator</button>
 <button class="nav-tab" id="tabBtnHist" onclick="switchMainTab('history')">📜 History</button>
+<button class="nav-tab" id="tabBtnConnect" onclick="switchMainTab('connect')">📞 Connect Compliance</button>
 </div>
 <div id="mainAllocator">
 <div class="step-indicator"><div class="step-dot active" id="dot1"></div><div class="step-dot" id="dot2"></div><div class="step-dot" id="dot3"></div><div class="step-dot" id="dot4"></div><div class="step-dot" id="dot5"></div></div>
@@ -499,6 +500,24 @@ textarea{resize:vertical;min-height:120px;font-family:'Consolas',monospace;font-
 <div class="form-group"><label>Login</label><input type="text" id="hfLogin" placeholder="Search..." oninput="renderHistoryTable()"></div>
 </div>
 <div id="histTableWrap"></div>
+</div>
+</div>
+<div id="mainConnect" class="hidden">
+<div class="card">
+<h2>📞 Connect Compliance — AUX / Availability</h2>
+<div class="alert alert-info">Paste the <strong>Nam Sked dashboard — Current agent performance</strong> export (CSV). The tool shows who is on <strong>Available (AUX)</strong> vs. other states (Lunch, Project, Break, etc.), grouped by shift &amp; location.</div>
+<div class="form-row"><div class="form-group" style="flex:1;"><label>Dashboard Data (CSV)</label><textarea id="connectData" placeholder="Paste the dashboard CSV here (Agent,Channel,Contact,Activity,Agent duration,Contact state,Contact duration,Agent hierarchy)..."></textarea></div></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;">
+<button class="btn btn-primary" onclick="parseConnectData()">📊 Analyze</button>
+<button class="btn btn-secondary" onclick="document.getElementById('connectData').value='';document.getElementById('connectResult').innerHTML='';">Clear</button>
+</div>
+<div class="form-row" style="margin-top:14px;">
+<div class="form-group"><label>Shift</label><select id="cfShift" onchange="renderConnect()"><option value="">All</option><option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option></select></div>
+<div class="form-group"><label>Location</label><select id="cfLoc" onchange="renderConnect()"><option value="">All</option><option value="B&amp;M">B&amp;M</option><option value="VROC">VROC</option></select></div>
+<div class="form-group"><label>Status</label><select id="cfStatus" onchange="renderConnect()"><option value="">All</option><option value="Available">On AUX (Available)</option><option value="NotAvailable">Not on AUX</option></select></div>
+<div class="form-group"><label>Search Login</label><input type="text" id="cfLogin" placeholder="Search..." oninput="renderConnect()"></div>
+</div>
+<div id="connectResult" style="margin-top:8px;"></div>
 </div>
 </div>
 <div class="footer">IPEX Work Allocation Tool v5.0 | ROC NA IB | Built by Pavan Kumar [kumrsdm]</div>
@@ -675,9 +694,135 @@ function toggleHistDetail(i){document.getElementById('histDetail_'+i).classList.
 function switchMainTab(tab){
 document.getElementById('mainAllocator').classList.toggle('hidden',tab!=='allocator');
 document.getElementById('mainHistory').classList.toggle('hidden',tab!=='history');
+document.getElementById('mainConnect').classList.toggle('hidden',tab!=='connect');
 document.getElementById('tabBtnAlloc').classList.toggle('active',tab==='allocator');
 document.getElementById('tabBtnHist').classList.toggle('active',tab==='history');
+document.getElementById('tabBtnConnect').classList.toggle('active',tab==='connect');
 if(tab==='history')renderHistoryTable();
+}
+// ===== CONNECT COMPLIANCE (AUX / AVAILABILITY) =====
+var connectData=[];
+function parseConnectData(){
+var raw=document.getElementById('connectData').value||'';
+if(!raw.trim()){alert('Paste the dashboard CSV first.');return;}
+connectData=parseConnectCSV(raw);
+if(!connectData.length){document.getElementById('connectResult').innerHTML='<div class="alert alert-warning">Could not parse any agent rows. Make sure you pasted the full dashboard export.</div>';return;}
+renderConnect();
+}
+// Parse the Nam Sked dashboard CSV. Handles quoted fields containing commas (e.g. "login (Last, First)").
+function parseConnectCSV(raw){
+var lines=raw.split(/\r?\n/).filter(function(l){return l.trim();});
+var rows=[];
+for(var i=0;i<lines.length;i++){
+var line=lines[i];
+var cells=splitCSVLine(line);
+var agent=(cells[0]||'').trim();
+// Skip header row and blanks
+if(!agent||/^agent$/i.test(agent)||/^"?agent"?$/i.test(agent))continue;
+var activity='',agentDur='',hierarchy='';
+if(cells.length>=8){
+// Proper delimited row (tab or comma)
+activity=(cells[3]||'').trim();
+agentDur=(cells[4]||'').trim();
+hierarchy=(cells[7]||'').trim();
+}else{
+// Fallback: space-aligned paste — pull fields out by pattern from the raw line.
+// Activity = first known state keyword; duration = first HH:MM:SS/MM:SS after it; hierarchy = the "HYD - ... - Sx" chunk.
+var am=line.match(/\b(Available|Lunch|Break|Project|Meeting|Training|Coaching|Idle|Offline|After\s*Call\s*Work|ACW|Not\s*Ready|Aux)\b/i);
+if(am)activity=am[1].trim();
+var dm=line.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);
+if(dm)agentDur=dm[1];
+var hm=line.match(/([A-Z]{2,4}\s*-\s*[^-\t]+-\s*S\d)\s*$/i);
+if(hm)hierarchy=hm[1].trim();
+// agent field may have swallowed everything up to the state; keep only up to the closing paren or first 2 words
+var apm=line.match(/^\s*"?(\S+)\s*\((.*?)\)/);
+if(apm)agent=apm[1]+' ('+apm[2]+')';
+else agent=(line.split(/\s{2,}|\t/)[0]||agent).trim();
+}
+// Extract login = leading token before the parenthesized full name or before first space
+var login=agent;var name='';
+var pm=agent.match(/^(\S+?)\s*[(](.*)[)]\s*$/);
+if(pm){login=pm[1].trim();name=pm[2].trim();}
+else{login=agent.split(/\s+/)[0].trim();}
+// Parse hierarchy: "HYD - B&M - S1" => location + shift
+var loc='',shift='';
+var hp=hierarchy.split(/\s*-\s*/);
+if(hp.length>=3){loc=hp[hp.length-2].trim();shift=hp[hp.length-1].trim();}
+else if(hp.length===2){shift=hp[1].trim();}
+if(!login)continue;
+rows.push({login:login,name:name,activity:activity,duration:agentDur,location:loc,shift:shift,hierarchy:hierarchy});
+}
+return rows;
+}
+// Split a single line respecting double-quoted fields. Auto-detects delimiter:
+// uses TAB if the line has a tab (Excel paste), otherwise comma (CSV export).
+function splitCSVLine(line){
+var delim=line.indexOf('\t')>=0?'\t':',';
+var out=[],cur='',inQ=false;
+for(var i=0;i<line.length;i++){
+var ch=line[i];
+if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+else if(ch===delim&&!inQ){out.push(cur);cur='';}
+else cur+=ch;
+}
+out.push(cur);
+return out;
+}
+function durationToSeconds(d){
+if(!d)return 0;var p=d.split(':').map(function(x){return parseInt(x,10)||0;});
+if(p.length===3)return p[0]*3600+p[1]*60+p[2];
+if(p.length===2)return p[0]*60+p[1];
+return p[0]||0;
+}
+function renderConnect(){
+if(!connectData.length){document.getElementById('connectResult').innerHTML='';return;}
+var fShift=document.getElementById('cfShift').value,fLoc=document.getElementById('cfLoc').value,fStatus=document.getElementById('cfStatus').value,fLogin=(document.getElementById('cfLogin').value||'').toLowerCase();
+var rows=connectData.filter(function(r){
+if(fShift&&r.shift!==fShift)return false;
+if(fLoc){var rl=r.location.replace(/&amp;/g,'&');if(rl!==fLoc.replace(/&amp;/g,'&'))return false;}
+if(fStatus==='Available'&&r.activity.toLowerCase()!=='available')return false;
+if(fStatus==='NotAvailable'&&r.activity.toLowerCase()==='available')return false;
+if(fLogin&&r.login.toLowerCase().indexOf(fLogin)<0&&r.name.toLowerCase().indexOf(fLogin)<0)return false;
+return true;
+});
+// Summary counts (from full parsed set, not filtered)
+var total=connectData.length,avail=0,notAvail=0,byState={};
+connectData.forEach(function(r){
+if(r.activity.toLowerCase()==='available')avail++;else notAvail++;
+var k=r.activity||'(blank)';byState[k]=(byState[k]||0)+1;
+});
+var h='<div class="stats-bar">';
+h+='<div class="stat-item"><div class="num">'+total+'</div><div class="label">Total Agents</div></div>';
+h+='<div class="stat-item"><div class="num" style="color:#38a169;">'+avail+'</div><div class="label">On AUX (Available)</div></div>';
+h+='<div class="stat-item"><div class="num" style="color:#e53e3e;">'+notAvail+'</div><div class="label">Not on AUX</div></div>';
+h+='</div>';
+// State breakdown chips
+h+='<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">';
+Object.keys(byState).sort().forEach(function(k){
+var isAvail=k.toLowerCase()==='available';
+h+='<span class="badge '+(isAvail?'badge-ict':'badge-ait')+'" style="font-size:12px;">'+k+': '+byState[k]+'</span>';
+});
+h+='</div>';
+// Table
+h+='<div style="margin-top:16px;overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+h+='<tr style="background:#f7fafc;"><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Login</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Name</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Status</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Duration</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Location</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Shift</th></tr>';
+if(!rows.length)h+='<tr><td colspan="6" style="padding:10px;text-align:center;color:#a0aec0;border:1px solid #e8ecf0;">No agents match the filters.</td></tr>';
+rows.sort(function(a,b){return durationToSeconds(b.duration)-durationToSeconds(a.duration);});
+rows.forEach(function(r){
+var isAvail=r.activity.toLowerCase()==='available';
+var stColor=isAvail?'#38a169':'#c05621';
+h+='<tr>';
+h+='<td style="padding:5px 10px;border:1px solid #f0f4f8;font-weight:600;">'+r.login+'</td>';
+h+='<td style="padding:5px 10px;border:1px solid #f0f4f8;">'+(r.name||'')+'</td>';
+h+='<td style="padding:5px 10px;border:1px solid #f0f4f8;color:'+stColor+';font-weight:600;">'+r.activity+'</td>';
+h+='<td style="padding:5px 10px;border:1px solid #f0f4f8;">'+r.duration+'</td>';
+h+='<td style="padding:5px 10px;border:1px solid #f0f4f8;">'+(r.location||'')+'</td>';
+h+='<td style="padding:5px 10px;border:1px solid #f0f4f8;">'+(r.shift||'')+'</td>';
+h+='</tr>';
+});
+h+='</table></div>';
+h+='<div style="margin-top:8px;font-size:11px;color:#718096;">Showing '+rows.length+' of '+total+' agents.</div>';
+document.getElementById('connectResult').innerHTML=h;
 }
 
 // ===== MAIN ALLOCATOR FUNCTIONS =====
