@@ -842,22 +842,23 @@ h+='</table></div></div>';
 }else{
 h+='<div style="margin-top:16px;border:1px solid #9ae6b4;background:#f0fff4;border-radius:8px;padding:12px 16px;font-size:13px;color:#276749;">✅ All '+scheduled.length+' associates scheduled for <strong>'+schedDate+' · '+schedShift+'</strong> are on AUX (Available).</div>';
 }
-// Reverse check: on AUX (Available) in Connect but NOT scheduled for this date+shift
+// Reverse check: present in Connect (ANY status) but NOT scheduled for this date+shift.
+// Intent: anyone not on the schedule should not be in Connect at all, regardless of their AUX status.
 var schedSet={};scheduled.forEach(function(s){schedSet[s.login]=true;});
 var extra=[];
 connectData.forEach(function(r){
-if(r.activity&&r.activity.toLowerCase()==='available'&&!schedSet[r.login.toLowerCase()]){
-extra.push({login:r.login,name:r.name,location:r.location,shift:r.shift});
+if(!schedSet[r.login.toLowerCase()]){
+extra.push({login:r.login,name:r.name,state:r.activity||'(blank)',location:r.location,shift:r.shift});
 }
 });
 if(extra.length){
 h+='<div style="margin-top:12px;border:1px solid #fbd38d;background:#fffaf0;border-radius:8px;padding:14px 16px;">';
-h+='<h3 style="font-size:13px;color:#c05621;margin-bottom:6px;">⚠️ On AUX but NOT scheduled ('+extra.length+')</h3>';
-h+='<div style="font-size:11px;color:#718096;margin-bottom:10px;">These associates are Available (AUX) in Connect but are not on the schedule for <strong>'+schedDate+' · '+schedShift+'</strong> (e.g. OFF/leave, or a different shift).</div>';
+h+='<h3 style="font-size:13px;color:#c05621;margin-bottom:6px;">⚠️ In Connect but NOT scheduled ('+extra.length+')</h3>';
+h+='<div style="font-size:11px;color:#718096;margin-bottom:10px;">These associates are logged into Connect (any status) but are not on the schedule for <strong>'+schedDate+' · '+schedShift+'</strong>. Anyone not scheduled should not be in Connect at all.</div>';
 h+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
-h+='<tr style="background:#feebc8;"><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Login</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Name</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Location</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Shift</th></tr>';
+h+='<tr style="background:#feebc8;"><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Login</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Name</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Connect State</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Location</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Shift</th></tr>';
 extra.forEach(function(f){
-h+='<tr><td style="padding:4px 10px;border:1px solid #feebc8;font-weight:600;">'+f.login+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.name||'')+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.location||'')+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.shift||'')+'</td></tr>';
+h+='<tr><td style="padding:4px 10px;border:1px solid #feebc8;font-weight:600;">'+f.login+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.name||'')+'</td><td style="padding:4px 10px;border:1px solid #feebc8;color:#c05621;font-weight:600;">'+f.state+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.location||'')+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.shift||'')+'</td></tr>';
 });
 h+='</table></div></div>';
 }
