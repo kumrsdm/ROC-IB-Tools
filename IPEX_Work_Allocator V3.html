@@ -774,6 +774,20 @@ if(p.length===3)return p[0]*3600+p[1]*60+p[2];
 if(p.length===2)return p[0]*60+p[1];
 return p[0]||0;
 }
+// Returns array of {login, team} scheduled/working for the selected date+shift (Step 2).
+// Rebuilds the availability list on the fly so Connect Compliance works even if Step 2 wasn't opened.
+function getScheduledLogins(){
+var date=document.getElementById('allocDate').value,shift=document.getElementById('allocShift').value;
+var out=[];
+if(!date||!shift)return out;
+['SKED','SFC','ICT','AIT'].forEach(function(team){
+(scheduleData[team]||[]).forEach(function(m){
+var working=isWorking(m.shifts[date],shift)||is6thDayWorking(m,date,shift)||isHalfDayWorking(m,date,shift);
+if(working)out.push({login:(m.login||'').toLowerCase(),team:team});
+});
+});
+return out;
+}
 function renderConnect(){
 if(!connectData.length){document.getElementById('connectResult').innerHTML='';return;}
 var fShift=document.getElementById('cfShift').value,fLoc=document.getElementById('cfLoc').value,fStatus=document.getElementById('cfStatus').value,fLogin=(document.getElementById('cfLogin').value||'').toLowerCase();
@@ -803,6 +817,53 @@ var isAvail=k.toLowerCase()==='available';
 h+='<span class="badge '+(isAvail?'badge-ict':'badge-ait')+'" style="font-size:12px;">'+k+': '+byState[k]+'</span>';
 });
 h+='</div>';
+// ===== Compliance flag: scheduled (Step 2 date+shift) but NOT on AUX in Connect =====
+var scheduled=getScheduledLogins();
+if(scheduled.length){
+// Map connect logins -> their activity
+var connMap={};connectData.forEach(function(r){connMap[r.login.toLowerCase()]=r.activity;});
+var flagged=[];
+scheduled.forEach(function(s){
+var act=connMap[s.login];
+var onAux=act&&act.toLowerCase()==='available';
+if(!onAux){flagged.push({login:s.login,team:s.team,state:act?act:'Not in Connect'});}
+});
+var schedDate=document.getElementById('allocDate').value,schedShift=document.getElementById('allocShift').value;
+if(flagged.length){
+h+='<div style="margin-top:16px;border:1px solid #feb2b2;background:#fff5f5;border-radius:8px;padding:14px 16px;">';
+h+='<h3 style="font-size:13px;color:#c53030;margin-bottom:6px;">🚩 Compliance Flags — scheduled but NOT on AUX ('+flagged.length+')</h3>';
+h+='<div style="font-size:11px;color:#718096;margin-bottom:10px;">Comparing schedule for <strong>'+schedDate+' · '+schedShift+'</strong> against the Connect dashboard. These associates are scheduled to work but are not showing as Available (AUX).</div>';
+h+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+h+='<tr style="background:#fed7d7;"><th style="padding:5px 10px;text-align:left;border:1px solid #feb2b2;">Login</th><th style="padding:5px 10px;text-align:left;border:1px solid #feb2b2;">Team</th><th style="padding:5px 10px;text-align:left;border:1px solid #feb2b2;">Connect State</th></tr>';
+flagged.forEach(function(f){
+h+='<tr><td style="padding:4px 10px;border:1px solid #fed7d7;font-weight:600;">'+f.login+'</td><td style="padding:4px 10px;border:1px solid #fed7d7;">'+f.team+'</td><td style="padding:4px 10px;border:1px solid #fed7d7;color:#c05621;font-weight:600;">'+f.state+'</td></tr>';
+});
+h+='</table></div></div>';
+}else{
+h+='<div style="margin-top:16px;border:1px solid #9ae6b4;background:#f0fff4;border-radius:8px;padding:12px 16px;font-size:13px;color:#276749;">✅ All '+scheduled.length+' associates scheduled for <strong>'+schedDate+' · '+schedShift+'</strong> are on AUX (Available).</div>';
+}
+// Reverse check: on AUX (Available) in Connect but NOT scheduled for this date+shift
+var schedSet={};scheduled.forEach(function(s){schedSet[s.login]=true;});
+var extra=[];
+connectData.forEach(function(r){
+if(r.activity&&r.activity.toLowerCase()==='available'&&!schedSet[r.login.toLowerCase()]){
+extra.push({login:r.login,name:r.name,location:r.location,shift:r.shift});
+}
+});
+if(extra.length){
+h+='<div style="margin-top:12px;border:1px solid #fbd38d;background:#fffaf0;border-radius:8px;padding:14px 16px;">';
+h+='<h3 style="font-size:13px;color:#c05621;margin-bottom:6px;">⚠️ On AUX but NOT scheduled ('+extra.length+')</h3>';
+h+='<div style="font-size:11px;color:#718096;margin-bottom:10px;">These associates are Available (AUX) in Connect but are not on the schedule for <strong>'+schedDate+' · '+schedShift+'</strong> (e.g. OFF/leave, or a different shift).</div>';
+h+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+h+='<tr style="background:#feebc8;"><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Login</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Name</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Location</th><th style="padding:5px 10px;text-align:left;border:1px solid #fbd38d;">Shift</th></tr>';
+extra.forEach(function(f){
+h+='<tr><td style="padding:4px 10px;border:1px solid #feebc8;font-weight:600;">'+f.login+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.name||'')+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.location||'')+'</td><td style="padding:4px 10px;border:1px solid #feebc8;">'+(f.shift||'')+'</td></tr>';
+});
+h+='</table></div></div>';
+}
+}else{
+h+='<div style="margin-top:16px;border:1px solid #fbd38d;background:#fffaf0;border-radius:8px;padding:12px 16px;font-size:12px;color:#c05621;">⚠️ No schedule loaded for the selected date/shift — upload the schedule in Step 1 and pick a date/shift in Step 2 to enable the compliance cross-check (scheduled vs. on AUX).</div>';
+}
 // Table
 h+='<div style="margin-top:16px;overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
 h+='<tr style="background:#f7fafc;"><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Login</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Name</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Status</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Duration</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Location</th><th style="padding:6px 10px;text-align:left;border:1px solid #e8ecf0;">Shift</th></tr>';
